@@ -5,12 +5,19 @@
 Summary
 =======
 
-steve is a command line utility for downloading information for a conference,
-downloading all the metadata for the videos, and making it easier to
-transform the data, fix it and make it better.
+`richard <https://github.com/willkg/richard>`_ is a video index
+site. It has a very basic admin interface for adding videos by hand
+one-by-one. This gets very tedious when adding all the videos for a
+conference.
 
-It's designed to use with richard. It uses richard's API for pulling/pushing
-data.
+`steve <https://github.com/willkg/steve>`_ is a command line utility
+for downloading information for a conference, downloading all the
+metadata for the videos, and making it easier to transform the data,
+fix it and make it better.
+
+richard and steve go together like peanut butter and jelly. You could
+use one without the other, but it's daft. steve uses richard's API for
+pulling/pushing video data.
 
 It solves this use case:
 
@@ -26,10 +33,19 @@ It solves this use case:
 Features
 ========
 
+May 29th, 2012: I just started working on steve---it has no features,
+yet.
+
 
 History
 =======
 
+I've been working on richard since March 2012. I knew I needed steve
+and had some thoughts on how it should work, but there were a bunch of
+things I wanted to do with richard, so I pushed work on steve off.
+
+Then on May 29th, 2012, I finished up the initial bits of steve and
+thus steve was born.
 
 
 License, etc
@@ -206,3 +222,6 @@ https://github.com/willkg/steve/issues
 Resources I found helpful
 =========================
 
+* `vidscraper <https://github.com/pculture/vidscraper>`_ and the
+  `vidscraper documentation
+  <http://vidscraper.readthedocs.org/en/latest/>`_
