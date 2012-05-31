@@ -22,6 +22,8 @@ import ConfigParser
 import os
 import sys
 
+import vidscraper
+
 try:
     import steve
 except ImportError:
@@ -96,6 +98,47 @@ def createproject_cmd(parsed):
     return 0
 
 
+def fetch_cmd(parsed):
+    try:
+        cp = get_project_config()
+    except ConfigNotFound:
+        steve.err('Could not find steve.ini project config file.')
+        return 1
+
+    projectpath = cp.get('project', 'projectpath')
+    jsonpath = os.path.join(projectpath, 'json')
+
+    if not os.path.exists(jsonpath):
+        os.makedirs(jsonpath)
+
+    try:
+        url = cp.get('project', 'url')
+    except ConfigParser.NoOptionError:
+        steve.err('url not specified in steve.ini project config file.')
+        steve.err('Add "url = ..." to [project] section of steve.ini file.')
+        return 1
+
+    steve.out('Scraping %s...' % url)
+    video_feed = vidscraper.auto_feed(url)
+    video_feed.load()
+    print 'Found %d videos...' % video_feed.video_count
+    for i, video in enumerate(video_feed):
+        if video.title:
+            filename = ''.join([c for c in video.title
+                                if c in c.isalpha() or c in '_-'])
+        else:
+            filename = '%05d' % i
+
+        filename = filename + '.json'
+
+        # TODO: put the video data into JSON format per the richard API,
+        # then save it in the json/ directory.
+
+        # TODO: what if there's a file there already? on the first one,
+        # prompt the user whether to stomp on existing files or skip.
+    return 0
+
+
 def status_cmd(parsed):
     try:
         cp = get_project_config()
@@ -158,6 +201,10 @@ def main(argv):
         'directory',
         help='name/path for the project directory')
     createproject_parser.set_defaults(func=createproject_cmd)
+
+    fetch_parser = subparsers.add_parser(
+        'fetch', help='fetches all the videos and generates .json files')
+    fetch_parser.set_defaults(func=fetch_cmd)
 
     status_parser = subparsers.add_parser(
         'status', help='shows you status of the videos in this project')
