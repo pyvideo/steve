@@ -18,9 +18,9 @@
 #######################################################################
 
 import argparse
-import sys
+import ConfigParser
 import os
-
+import sys
 
 try:
     import steve
@@ -36,6 +36,40 @@ USAGE = 'Usage: steve [program-options] COMMAND [command-options] ARGS'
 DESC = """
 Command line interface for steve.
 """
+CONFIG = """[project]
+# The name of this group of videos. For example, if this was a conference
+# called EuroPython 2011, then you'd put:
+# category = EuroPython 2011
+category =
+
+# The url for where all the videos are listed.
+# e.g. url = http://www.youtube.com/user/PythonItalia/videos
+url =
+"""
+
+
+class ConfigNotFound(Exception):
+    pass
+
+
+def get_project_config():
+    # TODO: Should we support parent directories, too?
+    projectpath = os.getcwd()
+    path = os.path.join(projectpath, 'steve.ini')
+    if not os.path.exists(path):
+        raise ConfigNotFound()
+
+    cp = ConfigParser.ConfigParser()
+    cp.read(path)
+
+    # TODO: This is a little dirty since we're inserting stuff into
+    # the config file if it's not there, but so it goes.
+    try:
+        cp.get('project', 'projectpath')
+    except ConfigParser.NoOptionError:
+        cp.set('project', 'projectpath', projectpath)
+
+    return cp
 
 
 def createproject_cmd(parsed):
@@ -47,11 +81,44 @@ def createproject_cmd(parsed):
 
     # TODO: this kicks up errors. catch the errors and tell the user
     # something more useful
+    steve.out('Creating directory %s...' % path)
     os.makedirs(path)
 
-    # TODO: create recipe file?
+    steve.out('Creating steve.ini...')
+    f = open(os.path.join(path, 'steve.ini'), 'w')
+    f.write(CONFIG)
+    f.close()
 
     steve.out('%s created.' % path)
+    steve.out('')
+
+    steve.out('Now cd into the directory and edit the steve.ini file.')
+    return 0
+
+
+def status_cmd(parsed):
+    try:
+        cp = get_project_config()
+    except ConfigNotFound:
+        steve.err('Could not find steve.ini project config file.')
+        return 1
+
+    projectpath = cp.get('project', 'projectpath')
+    jsonpath = os.path.join(projectpath, 'json')
+
+    if not os.path.exists(jsonpath):
+        steve.out('%s does not exist--no files.' % jsonpath)
+        return 0
+
+    steve.out('Video status:')
+    for f in os.listdir(jsonpath):
+        # This is goofy--should do a glob instead.
+        if not f.endswith('.json'):
+            continue
+        print f
+    else:
+        steve.out('No files.')
+
     return 0
 
 
@@ -91,6 +158,10 @@ def main(argv):
         'directory',
         help='name/path for the project directory')
     createproject_parser.set_defaults(func=createproject_cmd)
+
+    status_parser = subparsers.add_parser(
+        'status', help='shows you status of the videos in this project')
+    status_parser.set_defaults(func=status_cmd)
 
     # run_parser = subparsers.add_parser(
     #     'run', help='runs steve on the given configuration file')
