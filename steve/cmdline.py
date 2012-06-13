@@ -35,10 +35,13 @@ except ImportError:
 
 BYLINE = ('steve-cmd: %s (%s).  Licensed under the GPLv3.' % (
         steve.__version__, steve.__releasedate__))
+
 USAGE = 'Usage: steve [program-options] COMMAND [command-options] ARGS'
+
 DESC = """
 Command line interface for steve.
 """
+
 CONFIG = """[project]
 # The name of this group of videos. For example, if this was a conference
 # called EuroPython 2011, then you'd put:
@@ -54,7 +57,6 @@ url =
 # here.
 # youtube_embed = object
 """
-
 
 YOUTUBE_EMBED = {
     'object': ('<object width="640" height="360"><param name="movie" '
