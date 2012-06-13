@@ -130,24 +130,41 @@ Example use
 4. Edit ``steve.ini``::
 
        [project]
+       # The name of this group of videos. For example, if this was a conference
+       # called EuroPython 2011, then you'd put:
+       # category = EuroPython 2011
+       category = EuroPython 2011
+
+       # The url for where all the videos are listed.
+       # e.g. url = http://www.youtube.com/user/PythonItalia/videos
        url = http://www.youtube.com/user/PythonItalia/videos
-       type = youtube
+
+       # If the url is a YouTube-based url, you can either have 'object'
+       # based embed code or 'iframe' based embed code. Specify that
+       # here.
+       youtube_embed = object
 
 5. Run: ``steve-cmd fetch``
 
    This fetches the video metadata from that YouTube user and
-   generates a series of JSON files, one for each video, and puts them
-   in the ``json`` directory.
+   generates a series of JSON files---one for each video---and puts
+   them in the ``json`` directory.
 
    The format for each file matches the format expected by the richard
    API.
 
 6. Run: ``steve-cmd status``
 
-   Lists the titles of all the videos that have a non-empty whiteboard
+   Lists filenames for all videos that have a non-empty whiteboard
    field. Because you've just downloaded the metadata, all of the
    videos have a whiteboard field stating they haven't been edited,
    yet.
+
+   .. Note::
+
+      If you pass in ``--list``, it'll print out a list of the files
+      one per line making it easier to use with other command line
+      utilities.
 
 7. Run: ``steve-cmd ls``
 

@@ -19,9 +19,13 @@
 
 import ConfigParser
 import argparse
+import blessings
 import datetime
+import json
 import os
+import string
 import sys
+from functools import wraps
 
 import vidscraper
 
@@ -72,8 +76,23 @@ YOUTUBE_EMBED = {
     }
 
 
+ALLOWED_LETTERS = string.ascii_letters + string.digits + '-_'
+
+
 class ConfigNotFound(Exception):
     pass
+
+
+def with_config(fun):
+    @wraps(fun)
+    def _with_config(*args, **kwargs):
+        try:
+            cfg = get_project_config()
+        except ConfigNotFound:
+            steve.err('Could not find steve.ini project config file.')
+            return 1
+        return fun(cfg, *args, **kwargs)
+    return _with_config
 
 
 def get_project_config():
@@ -96,7 +115,10 @@ def get_project_config():
     return cp
 
 
-def createproject_cmd(parsed):
+def createproject_cmd(parser, parsed):
+    if not parsed.quiet:
+        parser.print_byline()
+
     path = os.path.abspath(parsed.directory)
     if os.path.exists(path):
         steve.err('%s exists. Remove it and try again or try again with '
@@ -165,7 +187,7 @@ def vidscraper_to_richard(video, youtube_embed=None):
                          video.file_url_mimetype)
 
     item['source_url'] = video.link
-    item['whiteboard'] = u''
+    item['whiteboard'] = u'needs editing'
     item['recorded'] = video.publish_datetime
     item['added'] = datetime.datetime.now()
     item['updates'] = datetime.datetime.now()
@@ -174,12 +196,10 @@ def vidscraper_to_richard(video, youtube_embed=None):
     return item
 
 
-def fetch_cmd(parsed):
-    try:
-        cfg = get_project_config()
-    except ConfigNotFound:
-        steve.err('Could not find steve.ini project config file.')
-        return 1
+@with_config
+def fetch_cmd(cfg, parser, parsed):
+    if not parsed.quiet:
+        parser.print_byline()
 
     projectpath = cfg.get('project', 'projectpath')
     jsonpath = os.path.join(projectpath, 'json')
@@ -211,8 +231,8 @@ def fetch_cmd(parsed):
     for i, video in enumerate(video_feed):
         if video.title:
             filename = video.title.replace(' ', '_')
-            filename = '_' + ''.join([c for c in filename
-                                      if c.isalpha() or c in '_-'])
+            filename = ''.join([c for c in filename if c in ALLOWED_LETTERS])
+            filename = '_' + filename
         else:
             filename = ''
 
@@ -227,30 +247,39 @@ def fetch_cmd(parsed):
 
         # TODO: what if there's a file there already? on the first one,
         # prompt the user whether to stomp on existing files or skip.
-        break
     return 0
 
 
-def status_cmd(parsed):
-    try:
-        cp = get_project_config()
-    except ConfigNotFound:
-        steve.err('Could not find steve.ini project config file.')
-        return 1
+@with_config
+def status_cmd(cfg, parser, parsed):
+    if not parsed.quiet and not parsed.list:
+        parser.print_byline()
 
-    projectpath = cp.get('project', 'projectpath')
+    projectpath = cfg.get('project', 'projectpath')
     jsonpath = os.path.join(projectpath, 'json')
 
+    if not parsed.list and not parsed.quiet:
+        steve.out('Video status:')
+
     if not os.path.exists(jsonpath):
-        steve.out('%s does not exist--no files.' % jsonpath)
+        if not parsed.list:
+            steve.out('%s does not exist--no files.' % jsonpath)
         return 0
 
-    steve.out('Video status:')
-    for f in os.listdir(jsonpath):
-        # This is goofy--should do a glob instead.
-        if not f.endswith('.json'):
-            continue
-        print f
+    term = blessings.Terminal()
+
+    files = [f for f in os.listdir(jsonpath) if f.endswith('.json')]
+    if parsed.list:
+        files = [os.path.join('json', f) for f in files]
+    files.sort()
+    if files:
+        for f in files:
+            if not parsed.list:
+                contents = open(os.path.join('json', f), 'r').read()
+                contents = json.loads(contents)
+                whiteboard = contents.get('whiteboard')
+                f = u'%s: %s' % (f, term.bold(whiteboard))
+            steve.out(f, wrap=False)
     else:
         steve.out('No files.')
 
@@ -258,10 +287,8 @@ def status_cmd(parsed):
 
 
 def main(argv):
-    if '-q' not in argv and '--quiet' not in argv:
-        steve.out(BYLINE)
-
-    parser = argparse.ArgumentParser(
+    parser = steve.BetterArgumentParser(
+        byline=BYLINE,
         description=steve.wrap_paragraphs(
             'steve makes it easier to aggregate and edit metadata for videos '
             'for a richard instance.'
@@ -300,6 +327,11 @@ def main(argv):
 
     status_parser = subparsers.add_parser(
         'status', help='shows you status of the videos in this project')
+    status_parser.add_argument(
+        '--list',
+        action='store_true',
+        default=False,
+        help='lists files one per line with no other output')
     status_parser.set_defaults(func=status_cmd)
 
     # run_parser = subparsers.add_parser(
@@ -318,7 +350,7 @@ def main(argv):
 
     parsed = parser.parse_args(argv)
 
-    return parsed.func(parsed)
+    return parsed.func(parser, parsed)
 
 
 if __name__ == '__main__':

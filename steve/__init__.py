@@ -18,5 +18,6 @@
 #######################################################################
 
 from steve._version import __version__, __releasedate__
-from steve.util import err, out, wrap, wrap_paragraphs, convert_to_json
+from steve.util import (err, out, wrap, wrap_paragraphs, convert_to_json,
+                        BetterArgumentParser)
 from steve.cmdline import main

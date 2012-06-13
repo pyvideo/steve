@@ -53,6 +53,7 @@ setup(
     install_requires=[
         "argparse",
         "vidscraper==0.5.2",
+        "blessings",
         ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",

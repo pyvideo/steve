@@ -18,10 +18,30 @@
 #######################################################################
 
 
+import argparse
 import datetime
 import json
 import sys
 import textwrap
+
+
+class BetterArgumentParser(argparse.ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        if 'byline' in kwargs:
+            self.byline = kwargs.pop('byline')
+        else:
+            self.byline = None
+        argparse.ArgumentParser.__init__(self, *args, **kwargs)
+
+    def print_byline(self, file=None):
+        if file is None:
+            file = sys.stdout
+        if self.byline:
+            self._print_message(self.byline + '\n', file)
+
+    def print_usage(self, file=None):
+        self.print_byline(file)
+        argparse.ArgumentParser.print_usage(self, file)
 
 
 def convert_to_json(structure):
