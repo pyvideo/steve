@@ -21,7 +21,6 @@ import ConfigParser
 import argparse
 import datetime
 import os
-import json
 import sys
 
 import vidscraper
@@ -117,15 +116,6 @@ def createproject_cmd(parsed):
 
     steve.out('Now cd into the directory and edit the steve.ini file.')
     return 0
-
-
-def convert_to_json(structure):
-    def convert(obj):
-        if isinstance(obj, (datetime.datetime, datetime.date)):
-            return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
-        return obj
-
-    return json.dumps(structure, indent=2, sort_keys=True, default=convert)
 
 
 def vidscraper_to_richard(video, youtube_embed=None):
@@ -230,7 +220,7 @@ def fetch_cmd(parsed):
         item = vidscraper_to_richard(video, youtube_embed=youtube_embed)
 
         f = open(os.path.join('json', filename), 'w')
-        f.write(convert_to_json(item))
+        f.write(steve.convert_to_json(item))
         f.close()
 
         # TODO: what if there's a file there already? on the first one,

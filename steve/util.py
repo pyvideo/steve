@@ -18,8 +18,19 @@
 #######################################################################
 
 
-import textwrap
+import datetime
+import json
 import sys
+import textwrap
+
+
+def convert_to_json(structure):
+    def convert(obj):
+        if isinstance(obj, (datetime.datetime, datetime.date)):
+            return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return obj
+
+    return json.dumps(structure, indent=2, sort_keys=True, default=convert)
 
 
 def wrap(text, indent=''):
