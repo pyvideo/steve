@@ -17,9 +17,11 @@
 # along with steve.  If not, see <http://www.gnu.org/licenses/>.
 #######################################################################
 
-import argparse
 import ConfigParser
+import argparse
+import datetime
 import os
+import json
 import sys
 
 import vidscraper
@@ -47,7 +49,26 @@ category =
 # The url for where all the videos are listed.
 # e.g. url = http://www.youtube.com/user/PythonItalia/videos
 url =
+
+# If the url is a YouTube-based url, you can either have 'object'
+# based embed code or 'iframe' based embed code. Specify that
+# here.
+# youtube_embed = object
 """
+
+
+YOUTUBE_EMBED = {
+    'object': ('<object width="640" height="360"><param name="movie" '
+               'value="%(youtubeurl)s?version=3&amp;hl=en_US"></param>'
+               '<param name="allowFullScreen" value="true"></param>'
+               '<param name="allowscriptaccess" value="always"></param>'
+               '<embed src="%(youtubeurl)s?version=3&amp;hl=en_US" '
+               'type="application/x-shockwave-flash" width="640" '
+               'height="360" allowscriptaccess="always" '
+               'allowfullscreen="true"></embed></object>'),
+    'iframe': ('<iframe width="640" height="360" src="%(youtubeurl)s" '
+               'frameborder="0" allowfullscreen></iframe>')
+    }
 
 
 class ConfigNotFound(Exception):
@@ -98,44 +119,123 @@ def createproject_cmd(parsed):
     return 0
 
 
+def convert_to_json(structure):
+    def convert(obj):
+        if isinstance(obj, (datetime.datetime, datetime.date)):
+            return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return obj
+
+    return json.dumps(structure, indent=2, sort_keys=True, default=convert)
+
+
+def vidscraper_to_richard(video, youtube_embed=None):
+    """Converts a vidscraper video to a richard item
+
+    :arg video: vidscraper Video
+    :arg youtube_embed: the embed code to use for YouTube videos
+
+    :returns: dict
+
+    """
+    item = {}
+
+    item['state'] = 2  # STATE_DRAFT
+    item['title'] = video.title
+    item['summary'] = video.description
+    item['description'] = u''
+    item['tags'] = video.tags
+    item['category'] = 0
+    item['speakers'] = []
+    item['quality_notes'] = u''
+    item['copyright_text'] = video.license
+
+    if 'youtube' in video.link:
+        item['embed'] = youtube_embed % {'youtubeurl': video.link}
+    else:
+        item['embed'] = video.embed_code
+    item['thumbnail_url'] = video.thumbnail_url
+
+    if video.file_url_mimetype:
+        if video.file_url_mimetype in ('video/ogg', 'video/ogv'):
+            item['video_ogv_length'] = video.file_url_length
+            item['video_ogv_url'] = video.file_url
+        elif video.file_url_mimetype == 'video/mp4':
+            item['video_mp4_length'] = video.file_url_length
+            item['video_mp4_url'] = video.file_url
+        elif video.file_url_mimetype == 'video/webm':
+            item['video_webm_length'] = video.file_url_length
+            item['video_webm_url'] = video.file_url
+        elif video.file_url_mimetype == 'video/x-flv':
+            item['video_flv_length'] = video.file_url_length
+            item['video_flv_url'] = video.file_url
+        else:
+            raise ValueError('No clue what to do with %s' %
+                         video.file_url_mimetype)
+
+    item['source_url'] = video.link
+    item['whiteboard'] = u''
+    item['recorded'] = video.publish_datetime
+    item['added'] = datetime.datetime.now()
+    item['updates'] = datetime.datetime.now()
+    item['slug'] = u''
+
+    return item
+
+
 def fetch_cmd(parsed):
     try:
-        cp = get_project_config()
+        cfg = get_project_config()
     except ConfigNotFound:
         steve.err('Could not find steve.ini project config file.')
         return 1
 
-    projectpath = cp.get('project', 'projectpath')
+    projectpath = cfg.get('project', 'projectpath')
     jsonpath = os.path.join(projectpath, 'json')
 
     if not os.path.exists(jsonpath):
         os.makedirs(jsonpath)
 
     try:
-        url = cp.get('project', 'url')
+        url = cfg.get('project', 'url')
     except ConfigParser.NoOptionError:
         steve.err('url not specified in steve.ini project config file.')
         steve.err('Add "url = ..." to [project] section of steve.ini file.')
         return 1
 
+    if 'youtube' in url:
+        try:
+            youtube_embed = YOUTUBE_EMBED[cfg.get('project', 'youtube_embed')]
+        except KeyError:
+            steve.err('youtube_embed must be either "iframe" or "object".')
+            return 1
+    else:
+        youtube_embed = None
+
     steve.out('Scraping %s...' % url)
-    video_feed = vidscraper.auto_feed(url)
+    video_feed = vidscraper.auto_feed(url, crawl=True)
     video_feed.load()
-    print 'Found %d videos...' % video_feed.video_count
+
+    print 'Found %d videos...' % video_feed.entry_count
     for i, video in enumerate(video_feed):
         if video.title:
-            filename = ''.join([c for c in video.title
-                                if c in c.isalpha() or c in '_-'])
+            filename = video.title.replace(' ', '_')
+            filename = '_' + ''.join([c for c in filename
+                                      if c.isalpha() or c in '_-'])
         else:
-            filename = '%05d' % i
+            filename = ''
 
-        filename = filename + '.json'
+        filename = '%04d%s.json' % (i, filename[:40])
 
-        # TODO: put the video data into JSON format per the richard API,
-        # then save it in the json/ directory.
+        print 'Working on %s... (%s)' % (video.title, filename)
+        item = vidscraper_to_richard(video, youtube_embed=youtube_embed)
+
+        f = open(os.path.join('json', filename), 'w')
+        f.write(convert_to_json(item))
+        f.close()
 
         # TODO: what if there's a file there already? on the first one,
         # prompt the user whether to stomp on existing files or skip.
+        break
     return 0
 
 

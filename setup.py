@@ -52,7 +52,7 @@ setup(
     scripts=['scripts/steve-cmd'],
     install_requires=[
         "argparse",
-        "vidscraper",
+        "vidscraper==0.5.2",
         ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
