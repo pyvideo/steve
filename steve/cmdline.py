@@ -285,6 +285,32 @@ def status_cmd(cfg, parser, parsed):
 
     return 0
 
+def video_to_json(url, video, **kwargs):
+    data = dict([(field, getattr(video, field))
+                 for field in video.fields])
+
+    for field in ('publish_datetime', 'file_url_expires'):
+        dt = data.get(field, None)
+        if isinstance(dt, datetime.datetime):
+            data[field] = dt.isoformat()
+
+    data['url'] = url
+    if 'youtube.com' in url:
+        data['object_embed_code'] = (YOUTUBE_EMBED['object'] %
+                                     {'youtubeurl': url})
+    return json.dumps(data, **kwargs)
+
+
+def scrapevideo_cmd(parser, parsed):
+    if not parsed.quiet:
+        parser.print_byline()
+
+    video_url = parsed.video[0]
+    video_data = vidscraper.auto_scrape(video_url)
+    print video_to_json(video_url, video_data, indent=2, sort_keys=True)
+
+    return 0
+
 
 def main(argv):
     parser = steve.BetterArgumentParser(
@@ -333,6 +359,13 @@ def main(argv):
         default=False,
         help='lists files one per line with no other output')
     status_parser.set_defaults(func=status_cmd)
+
+    scrapevideo_parser = subparsers.add_parser(
+        'scrapevideo', help='fetches metadata for a video from a site')
+    scrapevideo_parser.add_argument(
+        'video',
+        nargs=1)
+    scrapevideo_parser.set_defaults(func=scrapevideo_cmd)
 
     # run_parser = subparsers.add_parser(
     #     'run', help='runs steve on the given configuration file')
