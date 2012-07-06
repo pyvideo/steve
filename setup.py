@@ -54,6 +54,7 @@ setup(
         "argparse",
         "vidscraper==0.5.2",
         "blessings",
+        "slumber",
         ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
