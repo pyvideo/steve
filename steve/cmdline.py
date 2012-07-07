@@ -271,24 +271,46 @@ def status_cmd(cfg, parser, parsed):
     term = blessings.Terminal()
 
     files = [f for f in os.listdir(jsonpath) if f.endswith('.json')]
-    if parsed.list:
-        files = [os.path.join('json', f) for f in files]
+    files = [os.path.join('json', f) for f in files]
     files.sort()
     if files:
-        for f in files:
-            if not parsed.list:
-                contents = open(os.path.join('json', f), 'r').read()
-                contents = json.loads(contents)
-                whiteboard = contents.get('whiteboard')
-                if whiteboard:
-                    f = u'%s: %s' % (f, term.bold(whiteboard))
-                else:
-                    f = u'%s: %s' % (f, term.bold(term.green('Done!')))
-            steve.out(f, wrap=False)
+        done_files = []
+        in_progress_files = []
+
+        for fn in files:
+            contents = open(fn, 'r').read()
+            contents = json.loads(contents)
+            whiteboard = contents.get('whiteboard')
+            if whiteboard:
+                in_progress_files.append(fn)
+            else:
+                done_files.append(fn)
+
+        if parsed.list:
+            for fn in in_progress_files:
+                steve.out(fn, wrap=False)
+
+        else:
+            if in_progress_files:
+                for fn in in_progress_files:
+                    steve.out(u'%s: %s' % (fn, term.bold(whiteboard)),
+                              wrap=False)
+
+            if done_files:
+                steve.out('')
+                for fn in done_files:
+                    steve.out('%s: %s' % (fn, term.bold(term.green('Done!'))),
+                              wrap=False)
+
+            steve.out('')
+            steve.out('In progress: %3d' % len(in_progress_files))
+            steve.out('Done:        %3d' % len(done_files))
+
     else:
         steve.out('No files.')
 
     return 0
+
 
 def video_to_json(url, video, **kwargs):
     data = dict([(field, getattr(video, field))
