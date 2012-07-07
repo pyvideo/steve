@@ -173,11 +173,24 @@ Example use
 8. Edit the metadata. When you're done with a video, make sure to
    clear the whiteboard field.
 
-   TODO: steve should make this easier
+   One way to do this is to do::
 
-9. Run: ``steve-cmd push http://example.com/api/v1/``
+       steve-cmd status --list | xargs vim
 
-   This pushes the new videos to your richard instance.
+   and edit them by hand one-by-one.
+
+   TODO: steve should make this easier---provide batch transforms?
+
+9. Run: ``steve-cmd check``
+
+   This goes through all the json files and verifies correctness. Are
+   all the required key/value pairs present? Are the values of the
+   correct type? Are values that should be in HTML in HTML? Is the
+   HTML well-formed? Etc.
+
+10. Run: ``steve-cmd push http://example.com/api/v1/``
+
+    This pushes the new videos to your richard instance.
 
 That's it!
 
