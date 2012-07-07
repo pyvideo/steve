@@ -19,10 +19,13 @@
 
 
 import argparse
+import ConfigParser
 import datetime
 import json
+import os
 import sys
 import textwrap
+from functools import wraps
 
 
 class BetterArgumentParser(argparse.ArgumentParser):
@@ -42,6 +45,42 @@ class BetterArgumentParser(argparse.ArgumentParser):
     def print_usage(self, file=None):
         self.print_byline(file)
         argparse.ArgumentParser.print_usage(self, file)
+
+
+class ConfigNotFound(Exception):
+    pass
+
+
+def with_config(fun):
+    @wraps(fun)
+    def _with_config(*args, **kwargs):
+        try:
+            cfg = get_project_config()
+        except ConfigNotFound:
+            err('Could not find steve.ini project config file.')
+            return 1
+        return fun(cfg, *args, **kwargs)
+    return _with_config
+
+
+def get_project_config():
+    # TODO: Should we support parent directories, too?
+    projectpath = os.getcwd()
+    path = os.path.join(projectpath, 'steve.ini')
+    if not os.path.exists(path):
+        raise ConfigNotFound()
+
+    cp = ConfigParser.ConfigParser()
+    cp.read(path)
+
+    # TODO: This is a little dirty since we're inserting stuff into
+    # the config file if it's not there, but so it goes.
+    try:
+        cp.get('project', 'projectpath')
+    except ConfigParser.NoOptionError:
+        cp.set('project', 'projectpath', projectpath)
+
+    return cp
 
 
 def convert_to_json(structure):
@@ -94,3 +133,47 @@ def out(*output, **kwargs):
         indent = kwargs['indent']
         output = indent + ('\n' + indent).join(output.splitlines())
     sys.stdout.write(output + '\n')
+
+
+def load_json_files(config):
+    """Parses and returns all video files for a project
+
+    :returns: list of (filename, data) tuples
+    """
+    projectpath = config.get('project', 'projectpath')
+    jsonpath = os.path.join(projectpath, 'json')
+
+    if not os.path.exists(jsonpath):
+        return []
+
+    files = [f for f in os.listdir(jsonpath) if f.endswith('.json')]
+    files = [os.path.join('json', f) for f in files]
+    files.sort()
+
+    data = []
+
+    for fn in files:
+        try:
+            fp = open(fn, 'r')
+            data.append((fn, json.load(fp)))
+            fp.close()
+        except Exception, e:
+            err('Problem with %s' % fn, wrap=False)
+            raise e
+
+    return data
+
+
+def save_json_files(config, data, **kwargs):
+    """Saves json files
+
+    :arg config: configuration object
+    :arg data: list of (filename, data) tuples
+    """
+    if 'indent' not in kwargs:
+        kwargs['indent'] = 2
+
+    for fn, contents in data:
+        fp = open(fn, 'w')
+        json.dump(contents, fp, **kwargs)
+        fp.close()

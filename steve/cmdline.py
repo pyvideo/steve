@@ -25,7 +25,6 @@ import json
 import os
 import string
 import sys
-from functools import wraps
 
 import vidscraper
 
@@ -77,42 +76,6 @@ YOUTUBE_EMBED = {
 
 
 ALLOWED_LETTERS = string.ascii_letters + string.digits + '-_'
-
-
-class ConfigNotFound(Exception):
-    pass
-
-
-def with_config(fun):
-    @wraps(fun)
-    def _with_config(*args, **kwargs):
-        try:
-            cfg = get_project_config()
-        except ConfigNotFound:
-            steve.err('Could not find steve.ini project config file.')
-            return 1
-        return fun(cfg, *args, **kwargs)
-    return _with_config
-
-
-def get_project_config():
-    # TODO: Should we support parent directories, too?
-    projectpath = os.getcwd()
-    path = os.path.join(projectpath, 'steve.ini')
-    if not os.path.exists(path):
-        raise ConfigNotFound()
-
-    cp = ConfigParser.ConfigParser()
-    cp.read(path)
-
-    # TODO: This is a little dirty since we're inserting stuff into
-    # the config file if it's not there, but so it goes.
-    try:
-        cp.get('project', 'projectpath')
-    except ConfigParser.NoOptionError:
-        cp.set('project', 'projectpath', projectpath)
-
-    return cp
 
 
 def createproject_cmd(parser, parsed):
@@ -198,7 +161,7 @@ def vidscraper_to_richard(video, youtube_embed=None):
     return item
 
 
-@with_config
+@steve.with_config
 def fetch_cmd(cfg, parser, parsed):
     if not parsed.quiet:
         parser.print_byline()
@@ -252,66 +215,52 @@ def fetch_cmd(cfg, parser, parsed):
     return 0
 
 
-@with_config
+@steve.with_config
 def status_cmd(cfg, parser, parsed):
     if not parsed.quiet and not parsed.list:
         parser.print_byline()
 
-    projectpath = cfg.get('project', 'projectpath')
-    jsonpath = os.path.join(projectpath, 'json')
-
     if not parsed.list and not parsed.quiet:
         steve.out('Video status:')
 
-    if not os.path.exists(jsonpath):
+    files = steve.load_json_files(cfg)
+
+    if not files:
         if not parsed.list:
-            steve.out('%s does not exist--no files.' % jsonpath)
+            steve.out('No files')
         return 0
 
     term = blessings.Terminal()
 
-    files = [f for f in os.listdir(jsonpath) if f.endswith('.json')]
-    files = [os.path.join('json', f) for f in files]
-    files.sort()
-    if files:
-        done_files = []
-        in_progress_files = []
+    done_files = []
+    in_progress_files = []
 
-        for fn in files:
-            contents = open(fn, 'r').read()
-            try:
-                contents = json.loads(contents)
-            except Exception, e:
-                steve.err('Problem with %s' % fn, wrap=False)
-                raise e
-            whiteboard = contents.get('whiteboard')
-            if whiteboard:
-                in_progress_files.append(fn)
-            else:
-                done_files.append(fn)
-
-        if parsed.list:
-            for fn in in_progress_files:
-                steve.out(fn, wrap=False)
-
+    for fn, contents in files:
+        whiteboard = contents.get('whiteboard')
+        if whiteboard:
+            in_progress_files.append(fn)
         else:
-            if in_progress_files:
-                for fn in in_progress_files:
-                    steve.out(u'%s: %s' % (fn, term.bold(whiteboard)),
-                              wrap=False)
+            done_files.append(fn)
 
-            if done_files:
-                steve.out('')
-                for fn in done_files:
-                    steve.out('%s: %s' % (fn, term.bold(term.green('Done!'))),
-                              wrap=False)
-
-            steve.out('')
-            steve.out('In progress: %3d' % len(in_progress_files))
-            steve.out('Done:        %3d' % len(done_files))
+    if parsed.list:
+        for fn in in_progress_files:
+            steve.out(fn, wrap=False)
 
     else:
-        steve.out('No files.')
+        if in_progress_files:
+            for fn in in_progress_files:
+                steve.out(u'%s: %s' % (fn, term.bold(whiteboard)),
+                          wrap=False)
+
+        if done_files:
+            steve.out('')
+            for fn in done_files:
+                steve.out('%s: %s' % (fn, term.bold(term.green('Done!'))),
+                          wrap=False)
+
+        steve.out('')
+        steve.out('In progress: %3d' % len(in_progress_files))
+        steve.out('Done:        %3d' % len(done_files))
 
     return 0
 
