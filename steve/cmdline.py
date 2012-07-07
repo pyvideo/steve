@@ -139,6 +139,8 @@ def createproject_cmd(parser, parsed):
     steve.out('')
 
     steve.out('Now cd into the directory and edit the steve.ini file.')
+    steve.out('After you do that, you should put your project into version '
+              'control. Srsly.')
     return 0
 
 
@@ -278,7 +280,10 @@ def status_cmd(cfg, parser, parsed):
                 contents = open(os.path.join('json', f), 'r').read()
                 contents = json.loads(contents)
                 whiteboard = contents.get('whiteboard')
-                f = u'%s: %s' % (f, term.bold(whiteboard))
+                if whiteboard:
+                    f = u'%s: %s' % (f, term.bold(whiteboard))
+                else:
+                    f = u'%s: %s' % (f, term.bold(term.green('Done!')))
             steve.out(f, wrap=False)
     else:
         steve.out('No files.')
