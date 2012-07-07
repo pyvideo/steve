@@ -279,7 +279,11 @@ def status_cmd(cfg, parser, parsed):
 
         for fn in files:
             contents = open(fn, 'r').read()
-            contents = json.loads(contents)
+            try:
+                contents = json.loads(contents)
+            except Exception, e:
+                steve.err('Problem with %s' % fn, wrap=False)
+                raise e
             whiteboard = contents.get('whiteboard')
             if whiteboard:
                 in_progress_files.append(fn)
