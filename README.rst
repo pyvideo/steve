@@ -70,6 +70,8 @@ If you want a released version of steve, do this:
 
 1. ``pip install steve``
 
+`Unfortunately, there is currently no released version.`
+
 
 Bleeding edge version
 ---------------------
@@ -255,3 +257,5 @@ Resources I found helpful
 * `vidscraper <https://github.com/pculture/vidscraper>`_ and the
   `vidscraper documentation
   <http://vidscraper.readthedocs.org/en/latest/>`_
+* `slumber <http://slumber.in/>`_
+* `richard api docs<http://richard.readthedocs.org/en/latest/admin/api.html>`_
