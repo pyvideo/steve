@@ -173,6 +173,9 @@ def save_json_files(config, data, **kwargs):
     if 'indent' not in kwargs:
         kwargs['indent'] = 2
 
+    if 'sort_keys' not in kwargs:
+        kwargs['sort_keys'] = True
+
     for fn, contents in data:
         fp = open(fn, 'w')
         json.dump(contents, fp, **kwargs)
