@@ -26,6 +26,7 @@ import os
 import string
 import sys
 
+import slumber
 import vidscraper
 
 try:
@@ -59,6 +60,17 @@ url =
 # based embed code or 'iframe' based embed code. Specify that
 # here.
 # youtube_embed = object
+
+# The url for the richard instance api.
+# e.g. url = http://example.com/api/v1/
+api_url = 
+
+# Your api key.
+# 
+# Alternatively, you can pass this on the command line or put it in a
+# separate API_KEY file which you can keep out of version control.
+# e.g. api_key = OU812
+# api_key = 
 """
 
 YOUTUBE_EMBED = {
@@ -119,19 +131,24 @@ def vidscraper_to_richard(video, youtube_embed=None):
     item = {}
 
     item['state'] = 2  # STATE_DRAFT
+    item['whiteboard'] = u'needs editing'
+
     item['title'] = video.title
+    item['category'] = 0
     item['summary'] = video.description
     item['description'] = u''
-    item['tags'] = video.tags
-    item['category'] = 0
-    item['speakers'] = []
     item['quality_notes'] = u''
+    item['slug'] = u''
+    item['source_url'] = video.link
     item['copyright_text'] = video.license
 
-    if 'youtube' in video.link:
-        item['embed'] = youtube_embed % {'youtubeurl': video.link}
-    else:
-        item['embed'] = video.embed_code
+    item['tags'] = video.tags
+    item['speakers'] = []
+
+    item['added'] = datetime.datetime.now()
+    item['recorded'] = video.publish_datetime
+    item['language'] = u'English'
+
     item['thumbnail_url'] = video.thumbnail_url
 
     if video.file_url_mimetype:
@@ -151,12 +168,10 @@ def vidscraper_to_richard(video, youtube_embed=None):
             raise ValueError('No clue what to do with %s' %
                          video.file_url_mimetype)
 
-    item['source_url'] = video.link
-    item['whiteboard'] = u'needs editing'
-    item['recorded'] = video.publish_datetime
-    item['added'] = datetime.datetime.now()
-    item['updates'] = datetime.datetime.now()
-    item['slug'] = u''
+    if 'youtube' in video.link:
+        item['embed'] = youtube_embed % {'youtubeurl': video.link}
+    else:
+        item['embed'] = video.embed_code
 
     return item
 
@@ -292,6 +307,46 @@ def scrapevideo_cmd(parser, parsed):
     return 0
 
 
+@steve.with_config
+def push_cmd(cfg, parser, parsed):
+    if not parsed.quiet:
+        parser.print_byline()
+
+    try:
+        api_url = cfg.get('project', 'api_url')
+        if not api_url:
+            steve.err('"api_url" must be defined in steve.ini file.')
+            return 1
+    except ConfigParser.NoOptionError:
+        steve.err('"api_url" must be defined in steve.ini file.')
+        return 1
+
+    api_key = parsed.apikey
+    if not api_key:
+        projectpath = cfg.get('project', 'projectpath')
+        apikey_path = os.path.join(projectpath, 'API_KEY')
+        if os.path.exists(apikey_path):
+            api_key = open(apikey_path).read().strip()
+    if not api_key:
+        try:
+            api_key = cfg.get('project', 'api_key')
+        except ConfigParser.NoOptionError:
+            pass
+    if not api_key:
+        steve.err('Specify an api key either in steve.ini, on command line, '
+                  'or in API_KEY file.')
+        return 1
+
+    steve.out('Pushing to:    %s' % api_url)
+    steve.out('Using api_key: %s' % api_key)
+    steve.out('Once you push, you can not undo it. Push for realz? Y/N')
+    if not raw_input().strip().lower().startswith('y'):
+        steve.err('Aborting.')
+        return 1
+
+    return 0
+
+
 def main(argv):
     parser = steve.BetterArgumentParser(
         byline=BYLINE,
@@ -347,19 +402,12 @@ def main(argv):
         nargs=1)
     scrapevideo_parser.set_defaults(func=scrapevideo_cmd)
 
-    # run_parser = subparsers.add_parser(
-    #     'run', help='runs steve on the given configuration file')
-    # run_parser.add_argument(
-    #     'runconffile',
-    #     help='name/path for the configuration file')
-    # run_parser.set_defaults(func=run_cmd)
-
-    # next6_parser = subparsers.add_parser(
-    #     'next6', help='tells you next 6 dates for an event')
-    # next6_parser.add_argument(
-    #     'runconffile',
-    #     help='name/path for the configuration file')
-    # next6_parser.set_defaults(func=next6_cmd)
+    push_parser = subparsers.add_parser(
+        'push', help='pushes metadata to a richard instance')
+    push_parser.add_argument(
+        '--apikey',
+        help='pass in your API key via the command line')
+    push_parser.set_defaults(func=push_cmd)
 
     parsed = parser.parse_args(argv)
 
