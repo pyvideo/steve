@@ -27,6 +27,21 @@ import sys
 import textwrap
 from functools import wraps
 
+import vidscraper
+
+YOUTUBE_EMBED = {
+    'object': ('<object width="640" height="360"><param name="movie" '
+               'value="%(youtubeurl)s?version=3&amp;hl=en_US"></param>'
+               '<param name="allowFullScreen" value="true"></param>'
+               '<param name="allowscriptaccess" value="always"></param>'
+               '<embed src="%(youtubeurl)s?version=3&amp;hl=en_US" '
+               'type="application/x-shockwave-flash" width="640" '
+               'height="360" allowscriptaccess="always" '
+               'allowfullscreen="true"></embed></object>'),
+    'iframe': ('<iframe width="640" height="360" src="%(youtubeurl)s" '
+               'frameborder="0" allowfullscreen></iframe>')
+    }
+
 
 class BetterArgumentParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
@@ -119,6 +134,12 @@ def err(*output, **kwargs):
     sys.stderr.write(output + '\n')
 
 
+def stringify(blob):
+    if isinstance(blob, unicode):
+        return blob.encode('ascii', 'ignore')
+    return str(blob)
+
+
 def out(*output, **kwargs):
     """Writes output to stdout.
 
@@ -126,7 +147,7 @@ def out(*output, **kwargs):
         the output.
 
     """
-    output = ' '.join([str(o) for o in output])
+    output = ' '.join([stringify(o) for o in output])
     if kwargs.get('wrap') != False:
         output = '\n'.join(wrap(output, kwargs.get('indent', '')))
     elif kwargs.get('indent'):
@@ -180,3 +201,42 @@ def save_json_files(config, data, **kwargs):
         fp = open(fn, 'w')
         json.dump(contents, fp, **kwargs)
         fp.close()
+
+
+def save_json_file(config, fn, contents, **kwargs):
+    """Saves a single json file
+
+    :arg config: configuration object
+    :arg fn: filename
+    :arg contents: python dict to save
+    """
+    if 'indent' not in kwargs:
+        kwargs['indent'] = 2
+
+    if 'sort_keys' not in kwargs:
+        kwargs['sort_keys'] = True
+
+    fp = open(fn, 'w')
+    json.dump(contents, fp, **kwargs)
+    fp.close()
+
+
+def video_to_json(url, video, **kwargs):
+    data = dict([(field, getattr(video, field))
+                 for field in video.fields])
+
+    for field in ('publish_datetime', 'file_url_expires'):
+        dt = data.get(field, None)
+        if isinstance(dt, datetime.datetime):
+            data[field] = dt.isoformat()
+
+    data['url'] = url
+    if 'youtube.com' in url:
+        data['object_embed_code'] = (YOUTUBE_EMBED['object'] %
+                                     {'youtubeurl': url})
+    return json.dumps(data, **kwargs)
+
+
+def scrapevideo(video_url):
+    video_data = vidscraper.auto_scrape(video_url)
+    return video_to_json(video_url, video_data, indent=2, sort_keys=True)

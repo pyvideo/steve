@@ -21,7 +21,6 @@ import ConfigParser
 import argparse
 import blessings
 import datetime
-import json
 import os
 import string
 import sys
@@ -35,6 +34,8 @@ except ImportError:
     sys.stderr.write(
         'The steve library is not on your sys.path.  Please install steve.\n')
     sys.exit(1)
+
+from steve.util import YOUTUBE_EMBED
 
 
 BYLINE = ('steve-cmd: %s (%s).  Licensed under the GPLv3.' % (
@@ -63,31 +64,39 @@ url =
 
 # The url for the richard instance api.
 # e.g. url = http://example.com/api/v1/
-api_url = 
+api_url =
 
 # Your api key.
-# 
+#
 # Alternatively, you can pass this on the command line or put it in a
 # separate API_KEY file which you can keep out of version control.
 # e.g. api_key = OU812
-# api_key = 
+# api_key =
 """
 
-YOUTUBE_EMBED = {
-    'object': ('<object width="640" height="360"><param name="movie" '
-               'value="%(youtubeurl)s?version=3&amp;hl=en_US"></param>'
-               '<param name="allowFullScreen" value="true"></param>'
-               '<param name="allowscriptaccess" value="always"></param>'
-               '<embed src="%(youtubeurl)s?version=3&amp;hl=en_US" '
-               'type="application/x-shockwave-flash" width="640" '
-               'height="360" allowscriptaccess="always" '
-               'allowfullscreen="true"></embed></object>'),
-    'iframe': ('<iframe width="640" height="360" src="%(youtubeurl)s" '
-               'frameborder="0" allowfullscreen></iframe>')
-    }
-
-
 ALLOWED_LETTERS = string.ascii_letters + string.digits + '-_'
+
+
+def monkeypatch_slumber():
+    def post(self, data, **kwargs):
+        s = self.get_serializer()
+
+        resp = self._request("POST", data=s.dumps(data), params=kwargs)
+        if 200 <= resp.status_code <= 299:
+            if resp.status_code == 201:
+                # @@@ Hacky, see description in __call__
+                resource_obj = self(url_override=resp.headers["location"])
+                return resource_obj.get(**kwargs)
+            else:
+                return resp.content
+        else:
+            # @@@ Need to be Some sort of Error Here or Something
+            return
+
+    slumber.Resource.post = post
+
+
+monkeypatch_slumber()
 
 
 def createproject_cmd(parser, parsed):
@@ -280,29 +289,12 @@ def status_cmd(cfg, parser, parsed):
     return 0
 
 
-def video_to_json(url, video, **kwargs):
-    data = dict([(field, getattr(video, field))
-                 for field in video.fields])
-
-    for field in ('publish_datetime', 'file_url_expires'):
-        dt = data.get(field, None)
-        if isinstance(dt, datetime.datetime):
-            data[field] = dt.isoformat()
-
-    data['url'] = url
-    if 'youtube.com' in url:
-        data['object_embed_code'] = (YOUTUBE_EMBED['object'] %
-                                     {'youtubeurl': url})
-    return json.dumps(data, **kwargs)
-
-
 def scrapevideo_cmd(parser, parsed):
     if not parsed.quiet:
         parser.print_byline()
 
     video_url = parsed.video[0]
-    video_data = vidscraper.auto_scrape(video_url)
-    print video_to_json(video_url, video_data, indent=2, sort_keys=True)
+    print steve.scrapevideo(video_url)
 
     return 0
 
@@ -311,6 +303,17 @@ def scrapevideo_cmd(parser, parsed):
 def push_cmd(cfg, parser, parsed):
     if not parsed.quiet:
         parser.print_byline()
+
+    # Get username, api_url and api_key.
+
+    try:
+        username = cfg.get('project', 'username')
+        if not username:
+            steve.err('"username" must be defined in steve.ini file.')
+            return 1
+    except ConfigParser.NoOptionError:
+        steve.err('"username" must be defined in steve.ini file.')
+        return 1
 
     try:
         api_url = cfg.get('project', 'api_url')
@@ -337,12 +340,98 @@ def push_cmd(cfg, parser, parsed):
                   'or in API_KEY file.')
         return 1
 
+    username = username.strip()
+    api_url = api_url.strip()
+    api_key = api_key.strip()
+
+    data = steve.load_json_files(cfg)
+
+    # There are two modes:
+    #
+    # 1. User set category in configuration. Then the json files can
+    #    either have no category set or they have to have the same
+    #    category set.
+    #
+    # 2. User has NOT set category in configuration. Then the json
+    #    files must all have the category set. The categories can be
+    #    different.
+    #
+    # Go through and make sure there aren't any problems with
+    # categories.
+
+    api = slumber.API(api_url)
+
+    # Build a dict of cat title -> cat data.
+    all_categories = api.category.get()
+    all_categories = dict([(cat['title'], cat)
+                           for cat in all_categories['objects']])
+
+    try:
+        category = cfg.get('project', 'category')
+        category = category.strip()
+        if category not in all_categories:
+            steve.err('Category "%s" does not exist on server. Build it there '
+                      'first.' % category)
+            return 1
+
+    except ConfigParser.NoOptionError:
+        category = None
+
+    errors = False
+    for fn, contents in data:
+        if not category:
+            this_cat = contents.get('category')
+            if not this_cat:
+                steve.err('No category set in configuration and %s has no '
+                          'category set.' % fn)
+                errors = True
+            elif this_cat != this_cat.strip():
+                steve.err('Category "%s" has whitespace at beginning or '
+                          'end.' % this_cat)
+                return 1
+            elif this_cat not in all_categories:
+                steve.err('Category "%s" does not exist on server. '
+                          'Build it there first.' % this_cat)
+                return 1
+
+        else:
+            this_cat = contents.get('category')
+            if this_cat is not None and this_cat.strip() != category:
+                steve.err('Category set in configuration (%s), but %s has '
+                          'different category (%s).' % (
+                        category, fn, this_cat))
+                errors = True
+
+    if errors:
+        steve.err('Aborting.')
+        return 1
+
+    # Everything looks ok. So double-check with the user and push.
+
     steve.out('Pushing to:    %s' % api_url)
     steve.out('Using api_key: %s' % api_key)
     steve.out('Once you push, you can not undo it. Push for realz? Y/N')
     if not raw_input().strip().lower().startswith('y'):
         steve.err('Aborting.')
         return 1
+
+    for fn, contents in data:
+        contents['category'] = category or contents.get('category')
+
+        # FIXME - check to see if video exists and if so, update it
+        # instead.
+        if contents.get('id') is not None:
+            steve.out('Updating %s "%s" (%s)' % (
+                    contents['id'], contents['title'], fn))
+            vid = api.video(contents['id']).put(
+                contents, username=username, api_key=api_key)
+        else:
+            steve.out('Pushing "%s" (%s)' % (contents['title'], fn))
+            vid = api.video.post(contents, username=username, api_key=api_key)
+            contents['id'] = vid['id']
+            steve.out('   Now has id %s' % vid['id'])
+
+        steve.save_json_file(cfg, fn, contents)
 
     return 0
 
