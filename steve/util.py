@@ -30,16 +30,16 @@ from functools import wraps
 import vidscraper
 
 YOUTUBE_EMBED = {
-    'object': ('<object width="640" height="360"><param name="movie" '
-               'value="%(youtubeurl)s?version=3&amp;hl=en_US"></param>'
+    'object': ('<object width="640" height="390"><param name="movie" '
+               'value="http://youtube.com/v/%(guid)s?version=3&amp;hl=en_US"></param>'
                '<param name="allowFullScreen" value="true"></param>'
                '<param name="allowscriptaccess" value="always"></param>'
-               '<embed src="%(youtubeurl)s?version=3&amp;hl=en_US" '
+               '<embed src="http://youtube.com/v/%(guid)s?version=3&amp;hl=en_US" '
                'type="application/x-shockwave-flash" width="640" '
-               'height="360" allowscriptaccess="always" '
+               'height="390" allowscriptaccess="always" '
                'allowfullscreen="true"></embed></object>'),
-    'iframe': ('<iframe width="640" height="360" src="%(youtubeurl)s" '
-               'frameborder="0" allowfullscreen></iframe>')
+    'iframe': ('<iframe id="player" width="640" height="390" frameborder="0" '
+               'src="http://youtube.com/v/%(guid)s"></iframe>')
     }
 
 
@@ -232,8 +232,12 @@ def video_to_json(url, video, **kwargs):
 
     data['url'] = url
     if 'youtube.com' in url:
+        guid = data['guid'].split('/')[-1]
         data['object_embed_code'] = (YOUTUBE_EMBED['object'] %
-                                     {'youtubeurl': url})
+                                     {'guid': guid})
+        data['iframe_embed_code'] = (YOUTUBE_EMBED['iframe'] %
+                                     {'guid': guid})
+
     return json.dumps(data, **kwargs)
 
 
