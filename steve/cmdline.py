@@ -90,9 +90,12 @@ def monkeypatch_slumber():
                 return resource_obj.get(**kwargs)
             else:
                 return resp.content
-        else:
-            # @@@ Need to be Some sort of Error Here or Something
-            return
+        elif 500 <= resp.status_code <= 599:
+            raise slumber.exceptions.HttpServerError(
+                "Server Error %s" % resp.status_code,
+                response=resp, content=resp.content)
+
+        return resp.content
 
     slumber.Resource.post = post
 
