@@ -44,12 +44,12 @@ YOUTUBE_EMBED = {
 
 
 class BetterArgumentParser(argparse.ArgumentParser):
-    def __init__(self, *args, **kwargs):
-        if 'byline' in kwargs:
-            self.byline = kwargs.pop('byline')
+    def __init__(self, *args, **kw):
+        if 'byline' in kw:
+            self.byline = kw.pop('byline')
         else:
             self.byline = None
-        argparse.ArgumentParser.__init__(self, *args, **kwargs)
+        argparse.ArgumentParser.__init__(self, *args, **kw)
 
     def print_byline(self, file=None):
         if file is None:
@@ -68,13 +68,13 @@ class ConfigNotFound(Exception):
 
 def with_config(fun):
     @wraps(fun)
-    def _with_config(*args, **kwargs):
+    def _with_config(*args, **kw):
         try:
             cfg = get_project_config()
         except ConfigNotFound:
             err('Could not find steve.ini project config file.')
             return 1
-        return fun(cfg, *args, **kwargs)
+        return fun(cfg, *args, **kw)
     return _with_config
 
 
@@ -118,7 +118,7 @@ def wrap_paragraphs(text):
     return '\n\n'.join(text)
 
 
-def err(*output, **kwargs):
+def err(*output, **kw):
     """Writes output to stderr.
 
     :arg wrap: If you set ``wrap=False``, then ``err`` won't textwrap
@@ -126,10 +126,10 @@ def err(*output, **kwargs):
 
     """
     output = 'Error: ' + ' '.join([str(o) for o in output])
-    if kwargs.get('wrap') != False:
-        output = '\n'.join(wrap(output, kwargs.get('indent', '')))
-    elif kwargs.get('indent'):
-        indent = kwargs['indent']
+    if kw.get('wrap') != False:
+        output = '\n'.join(wrap(output, kw.get('indent', '')))
+    elif kw.get('indent'):
+        indent = kw['indent']
         output = indent + ('\n' + indent).join(output.splitlines())
     sys.stderr.write(output + '\n')
 
@@ -140,7 +140,7 @@ def stringify(blob):
     return str(blob)
 
 
-def out(*output, **kwargs):
+def out(*output, **kw):
     """Writes output to stdout.
 
     :arg wrap: If you set ``wrap=False``, then ``out`` won't textwrap
@@ -148,10 +148,10 @@ def out(*output, **kwargs):
 
     """
     output = ' '.join([stringify(o) for o in output])
-    if kwargs.get('wrap') != False:
-        output = '\n'.join(wrap(output, kwargs.get('indent', '')))
-    elif kwargs.get('indent'):
-        indent = kwargs['indent']
+    if kw.get('wrap') != False:
+        output = '\n'.join(wrap(output, kw.get('indent', '')))
+    elif kw.get('indent'):
+        indent = kw['indent']
         output = indent + ('\n' + indent).join(output.splitlines())
     sys.stdout.write(output + '\n')
 
@@ -185,62 +185,75 @@ def load_json_files(config):
     return data
 
 
-def save_json_files(config, data, **kwargs):
+def save_json_files(config, data, **kw):
     """Saves json files
 
     :arg config: configuration object
     :arg data: list of (filename, data) tuples
     """
-    if 'indent' not in kwargs:
-        kwargs['indent'] = 2
+    if 'indent' not in kw:
+        kw['indent'] = 2
 
-    if 'sort_keys' not in kwargs:
-        kwargs['sort_keys'] = True
+    if 'sort_keys' not in kw:
+        kw['sort_keys'] = True
 
     for fn, contents in data:
         fp = open(fn, 'w')
-        json.dump(contents, fp, **kwargs)
+        json.dump(contents, fp, **kw)
         fp.close()
 
 
-def save_json_file(config, fn, contents, **kwargs):
+def save_json_file(config, filename, contents, **kw):
     """Saves a single json file
 
     :arg config: configuration object
-    :arg fn: filename
+    :arg filename: filename
     :arg contents: python dict to save
     """
-    if 'indent' not in kwargs:
-        kwargs['indent'] = 2
+    if 'indent' not in kw:
+        kw['indent'] = 2
 
-    if 'sort_keys' not in kwargs:
-        kwargs['sort_keys'] = True
+    if 'sort_keys' not in kw:
+        kw['sort_keys'] = True
 
-    fp = open(fn, 'w')
-    json.dump(contents, fp, **kwargs)
+    fp = open(filename, 'w')
+    json.dump(contents, fp, **kw)
     fp.close()
 
 
-def video_to_json(url, video, **kwargs):
-    data = dict([(field, getattr(video, field))
-                 for field in video.fields])
+def scrapevideo(video_url):
+    """Scrapes the url and fixes the data
+
+    This is sort of a wrapper around `vidscraper.auto_scrape`. It
+    calls that, but then transforms the results into a Python dict and
+    adds some additional computed metadata.
+
+    :arg video_url: Url of video to scrape.
+
+    :returns: Python dict of metadata
+
+    For example:
+
+    >>> scrapevideo('http://www.youtube.com/watch?v=ywToByBkOTc')
+    {...}
+    """
+
+    video_data = vidscraper.auto_scrape(video_url)
+
+    data = dict([(field, getattr(video_data, field))
+                 for field in video_data.fields])
 
     for field in ('publish_datetime', 'file_url_expires'):
         dt = data.get(field, None)
         if isinstance(dt, datetime.datetime):
             data[field] = dt.isoformat()
 
-    data['url'] = url
-    if 'youtube.com' in url:
+    data['url'] = video_url
+    if 'youtube.com' in video_url and 'guid' in data and data['guid']:
         guid = data['guid'].split('/')[-1]
         data['object_embed_code'] = (YOUTUBE_EMBED['object'] %
                                      {'guid': guid})
         data['iframe_embed_code'] = (YOUTUBE_EMBED['iframe'] %
                                      {'guid': guid})
 
-    return json.dumps(data, **kwargs)
-
-
-def scrapevideo(video_url):
-    video_data = vidscraper.auto_scrape(video_url)
-    return video_to_json(video_url, video_data, indent=2, sort_keys=True)
+    return data

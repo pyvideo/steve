@@ -28,7 +28,6 @@ User/Contributor Guide
    installation
    using
    library
-   recipes
    hacking
    resources
 

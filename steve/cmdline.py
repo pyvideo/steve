@@ -18,13 +18,14 @@
 #######################################################################
 
 import ConfigParser
-import argparse
-import blessings
 import datetime
+import json
 import os
 import string
 import sys
 
+import argparse
+import blessings
 import slumber
 import vidscraper
 
@@ -294,7 +295,7 @@ def scrapevideo_cmd(parser, parsed):
         parser.print_byline()
 
     video_url = parsed.video[0]
-    print steve.scrapevideo(video_url)
+    print json.dumps(steve.scrapevideo(video_url), indent=2, sort_keys=True)
 
     return 0
 

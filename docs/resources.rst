@@ -18,4 +18,4 @@ slumber
 richard api docs
 ================
 
-* `richard api docs<http://richard.readthedocs.org/en/latest/admin/api.html>`_
+* `richard api docs <http://richard.readthedocs.org/en/latest/admin/api.html>`_
