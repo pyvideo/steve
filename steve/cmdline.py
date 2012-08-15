@@ -78,29 +78,29 @@ api_url =
 ALLOWED_LETTERS = string.ascii_letters + string.digits + '-_'
 
 
-def monkeypatch_slumber():
-    def post(self, data, **kwargs):
-        s = self.get_serializer()
+# def monkeypatch_slumber():
+#     def post(self, data, **kwargs):
+#         s = self.get_serializer()
 
-        resp = self._request("POST", data=s.dumps(data), params=kwargs)
-        if 200 <= resp.status_code <= 299:
-            if resp.status_code == 201:
-                # @@@ Hacky, see description in __call__
-                resource_obj = self(url_override=resp.headers["location"])
-                return resource_obj.get(**kwargs)
-            else:
-                return resp.content
-        elif 500 <= resp.status_code <= 599:
-            raise slumber.exceptions.HttpServerError(
-                "Server Error %s" % resp.status_code,
-                response=resp, content=resp.content)
+#         resp = self._request("POST", data=s.dumps(data), params=kwargs)
+#         if 200 <= resp.status_code <= 299:
+#             if resp.status_code == 201:
+#                 # @@@ Hacky, see description in __call__
+#                 resource_obj = self(url_override=resp.headers["location"])
+#                 return resource_obj.get(**kwargs)
+#             else:
+#                 return resp.content
+#         elif 500 <= resp.status_code <= 599:
+#             raise slumber.exceptions.HttpServerError(
+#                 "Server Error %s" % resp.status_code,
+#                 response=resp, content=resp.content)
 
-        return resp.content
+#         return resp.content
 
-    slumber.Resource.post = post
+#     slumber.Resource.post = post
 
 
-monkeypatch_slumber()
+# monkeypatch_slumber()
 
 
 def createproject_cmd(parser, parsed):
