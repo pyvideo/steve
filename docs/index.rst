@@ -26,7 +26,7 @@ User/Contributor Guide
    changelog
    license
    installation
-   using
+   commandline
    library
    hacking
    resources

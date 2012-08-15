@@ -1,6 +1,6 @@
-============================
- Using steve (command line)
-============================
+===========================
+ Using steve - commandline
+===========================
 
 For list of subcommands, arguments and other help, do this::
 

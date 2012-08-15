@@ -1,6 +1,6 @@
-===================
- steve the library
-===================
+=======================
+ Using steve - library
+=======================
 
 By day, steve is a cli of world renoun. By night, steve is a Python
 library capable of great cunning. This chapter covers the utility
