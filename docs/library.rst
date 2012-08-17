@@ -12,6 +12,8 @@ steve.util
 
 .. automodule:: steve.util
 
+   .. autofunction:: with_config(fun)
+
    .. autofunction:: get_project_config()
 
    .. autofunction:: load_json_files(config)
@@ -38,10 +40,10 @@ sets it to "English".
 
 ::
 
-    import steve
+    import steve.util
 
-    cfg = steve.get_project_config()
-    data = steve.load_json_files(cfg)
+    cfg = steve.util.get_project_config()
+    data = steve.util.load_json_files(cfg)
 
     for fn, contents in data:
         print fn
@@ -51,7 +53,7 @@ sets it to "English".
         else:
             contents['language'] = u'English'
 
-    steve.save_json_files(cfg, data)
+    steve.util.save_json_files(cfg, data)
 
 
 Most batch processing works this way:

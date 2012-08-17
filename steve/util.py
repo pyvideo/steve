@@ -30,16 +30,18 @@ from functools import wraps
 import vidscraper
 
 YOUTUBE_EMBED = {
-    'object': ('<object width="640" height="390"><param name="movie" '
-               'value="http://youtube.com/v/%(guid)s?version=3&amp;hl=en_US"></param>'
-               '<param name="allowFullScreen" value="true"></param>'
-               '<param name="allowscriptaccess" value="always"></param>'
-               '<embed src="http://youtube.com/v/%(guid)s?version=3&amp;hl=en_US" '
-               'type="application/x-shockwave-flash" width="640" '
-               'height="390" allowscriptaccess="always" '
-               'allowfullscreen="true"></embed></object>'),
-    'iframe': ('<iframe id="player" width="640" height="390" frameborder="0" '
-               'src="http://youtube.com/v/%(guid)s"></iframe>')
+    'object': (
+        '<object width="640" height="390"><param name="movie" '
+        'value="http://youtube.com/v/%(guid)s?version=3&amp;hl=en_US"></param>'
+        '<param name="allowFullScreen" value="true"></param>'
+        '<param name="allowscriptaccess" value="always"></param>'
+        '<embed src="http://youtube.com/v/%(guid)s?version=3&amp;hl=en_US" '
+        'type="application/x-shockwave-flash" width="640" '
+        'height="390" allowscriptaccess="always" '
+        'allowfullscreen="true"></embed></object>'),
+    'iframe': (
+        '<iframe id="player" width="640" height="390" frameborder="0" '
+        'src="http://youtube.com/v/%(guid)s"></iframe>')
     }
 
 
@@ -63,27 +65,50 @@ class BetterArgumentParser(argparse.ArgumentParser):
 
 
 class ConfigNotFound(Exception):
-    pass
+    """Denotes the config file couldn't be found"""
 
 
 def with_config(fun):
+    """Decorator that passes config as first argument
+
+    This calls :py:func:`get_project_config`. If that returns a
+    configuration object, then this passes that as the first argument
+    to the decorated function. If :py:func:`get_project_config` doesn't
+    return a config object, then this raises :py:exc:`ConfigNotFound`.
+
+    Example:
+
+    >>> @with_config
+    ... def config_printer(cfg):
+    ...     print 'Config!: %r' % cfg
+    ...
+    >>> config_printer()  # if it found a config
+    Config! ...
+    >>> config_printer()  # if it didn't find a config
+    Traceback
+        ...
+    steve.util.ConfigNotFound: steve.ini could not be found.
+    """
     @wraps(fun)
     def _with_config(*args, **kw):
-        try:
-            cfg = get_project_config()
-        except ConfigNotFound:
-            err('Could not find steve.ini project config file.')
-            return 1
+        cfg = get_project_config()
         return fun(cfg, *args, **kw)
     return _with_config
 
 
 def get_project_config():
+    """Finds and opens the config file in the current directory
+
+    :raises ConfigNotFound: if the config file can't be found
+
+    :returns: config file
+
+    """
     # TODO: Should we support parent directories, too?
     projectpath = os.getcwd()
     path = os.path.join(projectpath, 'steve.ini')
     if not os.path.exists(path):
-        raise ConfigNotFound()
+        raise ConfigNotFound('steve.ini could not be found.')
 
     cp = ConfigParser.ConfigParser()
     cp.read(path)
@@ -105,6 +130,63 @@ def convert_to_json(structure):
         return obj
 
     return json.dumps(structure, indent=2, sort_keys=True, default=convert)
+
+
+def vidscraper_to_dict(video, youtube_embed=None):
+    """Converts vidscraper Video to a python dict
+
+    :arg video: vidscraper Video
+    :arg youtube_embed: the embed code to use for YouTube videos
+
+    :returns: dict
+
+    """
+    item = {}
+
+    item['state'] = 2  # STATE_DRAFT
+    item['whiteboard'] = u'needs editing'
+
+    item['title'] = video.title
+    item['category'] = 0
+    item['summary'] = video.description
+    item['description'] = u''
+    item['quality_notes'] = u''
+    item['slug'] = u''
+    item['source_url'] = video.link
+    item['copyright_text'] = video.license
+
+    item['tags'] = video.tags
+    item['speakers'] = []
+
+    item['added'] = datetime.datetime.now()
+    item['recorded'] = video.publish_datetime
+    item['language'] = u'English'
+
+    item['thumbnail_url'] = video.thumbnail_url
+
+    if video.file_url_mimetype:
+        if video.file_url_mimetype in ('video/ogg', 'video/ogv'):
+            item['video_ogv_length'] = video.file_url_length
+            item['video_ogv_url'] = video.file_url
+        elif video.file_url_mimetype == 'video/mp4':
+            item['video_mp4_length'] = video.file_url_length
+            item['video_mp4_url'] = video.file_url
+        elif video.file_url_mimetype == 'video/webm':
+            item['video_webm_length'] = video.file_url_length
+            item['video_webm_url'] = video.file_url
+        elif video.file_url_mimetype == 'video/x-flv':
+            item['video_flv_length'] = video.file_url_length
+            item['video_flv_url'] = video.file_url
+        else:
+            raise ValueError('No clue what to do with %s' %
+                         video.file_url_mimetype)
+
+    if 'youtube' in video.link:
+        item['embed'] = youtube_embed % {'youtubeurl': video.link}
+    else:
+        item['embed'] = video.embed_code
+
+    return item
 
 
 def wrap(text, indent=''):
@@ -159,7 +241,11 @@ def out(*output, **kw):
 def load_json_files(config):
     """Parses and returns all video files for a project
 
-    :returns: list of (filename, data) tuples
+    :arg config: the configuration object
+    :returns: list of (filename, data) tuples where filename is the
+        string for the json file and data is a Python dict of
+        metadata.
+
     """
     projectpath = config.get('project', 'projectpath')
     jsonpath = os.path.join(projectpath, 'json')
@@ -186,10 +272,17 @@ def load_json_files(config):
 
 
 def save_json_files(config, data, **kw):
-    """Saves json files
+    """Saves a bunch of files to json format
 
-    :arg config: configuration object
-    :arg data: list of (filename, data) tuples
+    :arg config: the configuration object
+    :arg data: list of (filename, data) tuples where filename is the
+        string for the json file and data is a Python dict of metadata
+
+    .. Note::
+
+       This is the `save` side of :py:func:`load_json_files`. The output
+       of that function is the `data` argument for this one.
+
     """
     if 'indent' not in kw:
         kw['indent'] = 2
@@ -209,6 +302,8 @@ def save_json_file(config, filename, contents, **kw):
     :arg config: configuration object
     :arg filename: filename
     :arg contents: python dict to save
+    :arg kw: any keyword arguments accepted by `json.dump`
+
     """
     if 'indent' not in kw:
         kw['indent'] = 2
@@ -232,12 +327,12 @@ def scrapevideo(video_url):
 
     :returns: Python dict of metadata
 
-    For example:
+    Example:
 
     >>> scrapevideo('http://www.youtube.com/watch?v=ywToByBkOTc')
-    {...}
-    """
+    {'url': 'http://www.youtube.com/watch?v=ywToByBkOTc', ...}
 
+    """
     video_data = vidscraper.auto_scrape(video_url)
 
     data = dict([(field, getattr(video_data, field))

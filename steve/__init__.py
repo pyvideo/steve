@@ -18,8 +18,3 @@
 #######################################################################
 
 from steve._version import __version__, __releasedate__
-from steve.util import (
-    err, out, wrap, wrap_paragraphs, convert_to_json,
-    load_json_files, save_json_files, save_json_file, ConfigNotFound,
-    with_config, get_project_config, scrapevideo, BetterArgumentParser)
-from steve.cmdline import main

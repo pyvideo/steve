@@ -28,7 +28,7 @@ import os
 
 
 try:
-    import steve
+    import steve.cmdline
 except ImportError:
     sys.stderr.write(
         'The steve library is not on your sys.path.  Please install steve.\n')
@@ -36,4 +36,4 @@ except ImportError:
 
 
 if __name__ == '__main__':
-    sys.exit(steve.main(sys.argv[1:]))
+    sys.exit(steve.cmdline.main(sys.argv[1:]))
