@@ -27,12 +27,14 @@ import argparse
 import blessings
 import slumber
 import vidscraper
+from slumber.exceptions import HttpServerError
 
 try:
     import steve
     from steve.util import (
         YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
-        out, err, vidscraper_to_dict, ConfigNotFound)
+        out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
+        load_json_files, save_json_file)
 except ImportError:
     sys.stderr.write(
         'The steve library is not on your sys.path.  Please install steve.\n')
@@ -80,30 +82,24 @@ ALLOWED_LETTERS = string.ascii_letters + string.digits + '-_'
 
 # FIXME: This is needed for steve to work, but it breaks Carl's stuff,
 # but I'm not sure why.
-# 
-# def monkeypatch_slumber():
-#     def post(self, data, **kwargs):
-#         s = self.get_serializer()
-#
-#         resp = self._request("POST", data=s.dumps(data), params=kwargs)
-#         if 200 <= resp.status_code <= 299:
-#             if resp.status_code == 201:
-#                 # @@@ Hacky, see description in __call__
-#                 resource_obj = self(url_override=resp.headers["location"])
-#                 return resource_obj.get(**kwargs)
-#             else:
-#                 return resp.content
-#         elif 500 <= resp.status_code <= 599:
-#             raise slumber.exceptions.HttpServerError(
-#                 "Server Error %s" % resp.status_code,
-#                 response=resp, content=resp.content)
-#
-#         return resp.content
-#
-#     slumber.Resource.post = post
-#
-#
-# monkeypatch_slumber()
+
+def monkeypatch_slumber():
+    def post(self, data, **kwargs):
+        s = self.get_serializer()
+        resp = self._request("POST", data=s.dumps(data), params=kwargs)
+        if 200 <= resp.status_code <= 299:
+            if resp.status_code == 201:
+                # @@@ Hacky, see description in __call__
+                resource_obj = self(url_override=resp.headers["location"])
+                return resource_obj.get(**kwargs)
+            else:
+                return resp.content
+        elif 500 <= resp.status_code <= 599:
+            raise slumber.exceptions.HttpServerError(
+                "Server Error %s" % resp.status_code,
+                response=resp, content=resp.content)
+        return resp.content
+    slumber.Resource.post = post
 
 
 def createproject_cmd(parser, parsed):
@@ -184,7 +180,7 @@ def fetch_cmd(cfg, parser, parsed):
         item = vidscraper_to_dict(video, youtube_embed=youtube_embed)
 
         f = open(os.path.join('json', filename), 'w')
-        f.write(steve.convert_to_json(item))
+        f.write(convert_to_json(item))
         f.close()
 
         # TODO: what if there's a file there already? on the first one,
@@ -257,6 +253,9 @@ def push_cmd(cfg, parser, parsed):
     if not parsed.quiet:
         parser.print_byline()
 
+    # Monkeypatch slumber to suck less.
+    monkeypatch_slumber()
+
     # Get username, api_url and api_key.
 
     try:
@@ -277,12 +276,8 @@ def push_cmd(cfg, parser, parsed):
         err('"api_url" must be defined in steve.ini file.')
         return 1
 
+    # Command line api_key overrides config-set api_key
     api_key = parsed.apikey
-    if not api_key:
-        projectpath = cfg.get('project', 'projectpath')
-        apikey_path = os.path.join(projectpath, 'API_KEY')
-        if os.path.exists(apikey_path):
-            api_key = open(apikey_path).read().strip()
     if not api_key:
         try:
             api_key = cfg.get('project', 'api_key')
@@ -290,14 +285,14 @@ def push_cmd(cfg, parser, parsed):
             pass
     if not api_key:
         err('Specify an api key either in steve.ini, on command line, '
-                  'or in API_KEY file.')
+            'or in API_KEY file.')
         return 1
 
     username = username.strip()
     api_url = api_url.strip()
     api_key = api_key.strip()
 
-    data = steve.load_json_files(cfg)
+    data = load_json_files(cfg)
 
     # There are two modes:
     #
@@ -332,7 +327,7 @@ def push_cmd(cfg, parser, parsed):
 
     errors = False
     for fn, contents in data:
-        if not category:
+        if category is None:
             this_cat = contents.get('category')
             if not this_cat:
                 err('No category set in configuration and %s has no '
@@ -349,7 +344,7 @@ def push_cmd(cfg, parser, parsed):
 
         else:
             this_cat = contents.get('category')
-            if this_cat is not None and this_cat.strip() != category:
+            if this_cat is not None and str(this_cat).strip() != category:
                 err('Category set in configuration (%s), but %s has '
                           'different category (%s).' % (
                         category, fn, this_cat))
@@ -361,8 +356,8 @@ def push_cmd(cfg, parser, parsed):
 
     # Everything looks ok. So double-check with the user and push.
 
-    out('Pushing to:    %s' % api_url)
-    out('Using api_key: %s' % api_key)
+    out('Pushing to:             %s' % api_url)
+    out('Using username/api_key: %s/%s' % (username, api_key))
     out('Once you push, you can not undo it. Push for realz? Y/N')
     if not raw_input().strip().lower().startswith('y'):
         err('Aborting.')
@@ -371,23 +366,33 @@ def push_cmd(cfg, parser, parsed):
     for fn, contents in data:
         contents['category'] = category or contents.get('category')
 
-        # FIXME - check to see if video exists and if so, update it
-        # instead.
-        if contents.get('id') is not None:
-            out('Updating %s "%s" (%s)' % (
-                    contents['id'], contents['title'], fn))
-            vid = api.video(contents['id']).put(
-                contents, username=username, api_key=api_key)
-        else:
-            out('Pushing "%s" (%s)' % (contents['title'], fn))
+        # FIXME - it'd be nice to be able to do a "PUT" and update
+        # the item, but that doesn't work right if we're moving from
+        # server to server and the ids are different, so I'm going
+        # to nix that for now.
+        del contents['id']
+
+        # # FIXME - check to see if video exists and if so, update it
+        # # instead.
+        # if contents.get('id') is not None:
+        #     out('Updating %s "%s" (%s)' % (
+        #             contents['id'], contents['title'], fn))
+        #     vid = api.video(contents['id']).put(
+        #         contents, username=username, api_key=api_key)
+
+        # else:
+        out('Pushing "%s" (%s)' % (contents['title'], fn))
+        try:
             vid = api.video.post(contents, username=username, api_key=api_key)
             if 'id' in vid:
                 contents['id'] = vid['id']
                 out('   Now has id %s' % vid['id'])
             else:
                 err('   Errors?: %s' % vid)
+        except HttpServerError as exc:
+            err('   Errors?: %s' % exc)
 
-        steve.save_json_file(cfg, fn, contents)
+        save_json_file(cfg, fn, contents)
 
     return 0
 

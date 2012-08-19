@@ -120,7 +120,49 @@ def get_project_config():
     except ConfigParser.NoOptionError:
         cp.set('project', 'projectpath', projectpath)
 
+    # API_KEY file overrides api_key set in config file.
+    apikey_path = os.path.join(projectpath, 'API_KEY')
+    if os.path.exists(apikey_path):
+        api_key = open(apikey_path).read().strip()
+        cp.set('project', 'api_key', api_key)
+
     return cp
+
+
+def load_tags_file(config):
+    """Opens the tags file and loads tags
+
+    The tags file is either specified in the ``tagsfile`` config
+    entry or it's ``PROJECTPATH/tags.txt``.
+
+    The file consists of a list of tags---one per line. Blank lines
+    and lines that start with ``#`` are removed.
+
+    This will read the file and return the list of tags.
+
+    If the file doesn't exist, this returns an empty list.
+
+    :arg config: the project config file
+
+    :returns: list of strings
+
+    """
+    projectpath = config.get('project', 'projectpath')
+    try:
+        tagsfile = config.get('project', 'tagsfile')
+    except ConfigParser.NoOptionError:
+        tagsfile = 'tags.txt'
+
+    tagsfile = os.path.join(projectpath, tagsfile)
+    if not os.path.exists(tagsfile):
+        return []
+
+    fp = open(tagsfile, 'r')
+    tags = [tag.strip() for tag in fp.readlines()]
+    fp.close()
+
+    # Nix blank lines and lines that start with #.
+    return [tag for tag in tags if tag and not tag.startswith('#')]
 
 
 def convert_to_json(structure):
@@ -168,23 +210,32 @@ def vidscraper_to_dict(video, youtube_embed=None):
         if video.file_url_mimetype in ('video/ogg', 'video/ogv'):
             item['video_ogv_length'] = video.file_url_length
             item['video_ogv_url'] = video.file_url
+            item['video_ogv_download_only'] = False
         elif video.file_url_mimetype == 'video/mp4':
             item['video_mp4_length'] = video.file_url_length
             item['video_mp4_url'] = video.file_url
+            item['video_mp4_download_only'] = False
         elif video.file_url_mimetype == 'video/webm':
             item['video_webm_length'] = video.file_url_length
             item['video_webm_url'] = video.file_url
+            item['video_webm_download_only'] = False
         elif video.file_url_mimetype == 'video/x-flv':
             item['video_flv_length'] = video.file_url_length
             item['video_flv_url'] = video.file_url
+            item['video_flv_download_only'] = False
         else:
             raise ValueError('No clue what to do with %s' %
                          video.file_url_mimetype)
 
-    if 'youtube' in video.link:
-        item['embed'] = youtube_embed % {'youtubeurl': video.link}
-    else:
-        item['embed'] = video.embed_code
+    item['embed'] = video.embed_code
+
+    if (youtube_embed is not None and 'youtube.com' in video.link
+        and hasattr(video, 'guid')):
+
+        guid = video.guid
+        if guid:
+            guid = video.guid.split('/')[-1]
+            item['embed'] = youtube_embed % {'guid': guid}
 
     return item
 
