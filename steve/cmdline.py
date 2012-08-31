@@ -27,7 +27,7 @@ import argparse
 import blessings
 import slumber
 import vidscraper
-from slumber.exceptions import HttpServerError
+from slumber.exceptions import HttpServerError, HttpClientError
 
 try:
     import steve
@@ -102,7 +102,7 @@ def monkeypatch_slumber():
     slumber.Resource.post = post
 
 
-def createproject_cmd(parser, parsed):
+def createproject_cmd(parser, parsed, args):
     if not parsed.quiet:
         parser.print_byline()
 
@@ -132,7 +132,7 @@ def createproject_cmd(parser, parsed):
 
 
 @with_config
-def fetch_cmd(cfg, parser, parsed):
+def fetch_cmd(cfg, parser, parsed, args):
     if not parsed.quiet:
         parser.print_byline()
 
@@ -189,7 +189,7 @@ def fetch_cmd(cfg, parser, parsed):
 
 
 @with_config
-def status_cmd(cfg, parser, parsed):
+def status_cmd(cfg, parser, parsed, args):
     if not parsed.quiet and not parsed.list:
         parser.print_byline()
 
@@ -238,7 +238,7 @@ def status_cmd(cfg, parser, parsed):
     return 0
 
 
-def scrapevideo_cmd(parser, parsed):
+def scrapevideo_cmd(parser, parsed, args):
     if not parsed.quiet:
         parser.print_byline()
 
@@ -249,7 +249,7 @@ def scrapevideo_cmd(parser, parsed):
 
 
 @with_config
-def push_cmd(cfg, parser, parsed):
+def push_cmd(cfg, parser, parsed, args):
     if not parsed.quiet:
         parser.print_byline()
 
@@ -293,6 +293,9 @@ def push_cmd(cfg, parser, parsed):
     api_key = api_key.strip()
 
     data = load_json_files(cfg)
+
+    if args:
+        data = [(fn, contents) for fn, contents in data if fn in args]
 
     # There are two modes:
     #
@@ -356,8 +359,9 @@ def push_cmd(cfg, parser, parsed):
 
     # Everything looks ok. So double-check with the user and push.
 
-    out('Pushing to:             %s' % api_url)
-    out('Using username/api_key: %s/%s' % (username, api_key))
+    out('Pushing to: %s' % api_url)
+    out('Username:   %s' % username)
+    out('api_key:    %s' % api_key)
     out('Once you push, you can not undo it. Push for realz? Y/N')
     if not raw_input().strip().lower().startswith('y'):
         err('Aborting.')
@@ -370,7 +374,10 @@ def push_cmd(cfg, parser, parsed):
         # the item, but that doesn't work right if we're moving from
         # server to server and the ids are different, so I'm going
         # to nix that for now.
-        del contents['id']
+        #
+        # Probably better to have it as a flag to the push command.
+        if 'id' in contents:
+            del contents['id']
 
         # # FIXME - check to see if video exists and if so, update it
         # # instead.
@@ -381,7 +388,7 @@ def push_cmd(cfg, parser, parsed):
         #         contents, username=username, api_key=api_key)
 
         # else:
-        out('Pushing "%s" (%s)' % (contents['title'], fn))
+        out('Pushing %s' % fn)
         try:
             vid = api.video.post(contents, username=username, api_key=api_key)
             if 'id' in vid:
@@ -389,8 +396,11 @@ def push_cmd(cfg, parser, parsed):
                 out('   Now has id %s' % vid['id'])
             else:
                 err('   Errors?: %s' % vid)
+        except HttpClientError as exc:
+            err('   ClientErrors?: %s' % exc)
+            err('   "%s"' % exc.response.content)
         except HttpServerError as exc:
-            err('   Errors?: %s' % exc)
+            err('   ServerErrors?: %s' % exc)
 
         save_json_file(cfg, fn, contents)
 
@@ -459,10 +469,10 @@ def main(argv):
         help='pass in your API key via the command line')
     push_parser.set_defaults(func=push_cmd)
 
-    parsed = parser.parse_args(argv)
+    parsed, args = parser.parse_known_args(argv)
 
     try:
-        return parsed.func(parser, parsed)
+        return parsed.func(parser, parsed, args)
     except ConfigNotFound as cnf:
         # Some commands have the @with_config decorator which throws a
         # ConfigNotFound exception if the steve.ini file can't be
