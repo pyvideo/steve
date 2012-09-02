@@ -34,7 +34,7 @@ try:
     from steve.util import (
         YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
         out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
-        load_json_files, save_json_file)
+        load_json_files, save_json_file, save_json_files, get_from_config)
 except ImportError:
     sys.stderr.write(
         'The steve library is not on your sys.path.  Please install steve.\n')
@@ -258,23 +258,8 @@ def push_cmd(cfg, parser, parsed, args):
 
     # Get username, api_url and api_key.
 
-    try:
-        username = cfg.get('project', 'username')
-        if not username:
-            err('"username" must be defined in steve.ini file.')
-            return 1
-    except ConfigParser.NoOptionError:
-        err('"username" must be defined in steve.ini file.')
-        return 1
-
-    try:
-        api_url = cfg.get('project', 'api_url')
-        if not api_url:
-            err('"api_url" must be defined in steve.ini file.')
-            return 1
-    except ConfigParser.NoOptionError:
-        err('"api_url" must be defined in steve.ini file.')
-        return 1
+    username = get_from_config(cfg, 'username')
+    api_url = get_from_config(cfg, 'api_url')
 
     # Command line api_key overrides config-set api_key
     api_key = parsed.apikey
@@ -288,9 +273,8 @@ def push_cmd(cfg, parser, parsed, args):
             'or in API_KEY file.')
         return 1
 
-    username = username.strip()
-    api_url = api_url.strip()
-    api_key = api_key.strip()
+    if not username or not api_url or not api_key:
+        return 1
 
     data = load_json_files(cfg)
 
@@ -407,6 +391,70 @@ def push_cmd(cfg, parser, parsed, args):
     return 0
 
 
+@with_config
+def pull_cmd(cfg, parser, parsed, args):
+    if not parsed.quiet:
+        parser.print_byline()
+
+    username = get_from_config(cfg, 'username')
+    api_url = get_from_config(cfg, 'api_url')
+    cat_title = get_from_config(cfg, 'category')
+
+    # Command line api_key overrides config-set api_key
+    api_key = parsed.apikey
+    if not api_key:
+        try:
+            api_key = cfg.get('project', 'api_key')
+        except ConfigParser.NoOptionError:
+            pass
+    if not api_key:
+        err('Specify an api key either in steve.ini, on command line, '
+            'or in API_KEY file.')
+        return 1
+
+    if not username or not api_url or not cat_title or not api_key:
+        return 1
+
+    api = slumber.API(api_url)
+
+    all_categories = api.category.get(username=username, api_key=api_key,
+                                      limit=0)
+    cat = [cat_item for cat_item in all_categories['objects']
+           if cat_item['title'] == cat_title]
+
+    if not cat:
+        err('Category "%s" does not exist.' % cat_title)
+        return 1
+
+    # Get the category from the list of 1.
+    cat = cat[0]
+
+    out('Retrieved category.')
+
+    data = []
+
+    for counter, video_url in enumerate(cat['videos']):
+        # Lame, but good enough for now.
+        video_id = video_url.split('/')[-2]
+
+        video_data = api.video(int(video_id)).get(username=username, api_key=api_key)
+
+        out('Working on "%s"' % video_data['slug'])
+
+        # Nix some tastypie bits from the data.
+        for bad_key in ('resource_uri',):
+            if bad_key in video_data:
+                del video_data[bad_key]
+
+        fn = 'json/%04d_%s.json' % (counter, video_data['slug'])
+        data.append((fn, video_data))
+
+    out('Saving files....')
+    save_json_files(cfg, data)
+
+    return 0
+
+
 def main(argv):
     parser = BetterArgumentParser(
         byline=BYLINE,
@@ -468,6 +516,13 @@ def main(argv):
         '--apikey',
         help='pass in your API key via the command line')
     push_parser.set_defaults(func=push_cmd)
+
+    pull_parser = subparsers.add_parser(
+        'pull', help='pulls metadata from a richard instance')
+    pull_parser.add_argument(
+        '--apikey',
+        help='pass in your API key via the command line')
+    pull_parser.set_defaults(func=pull_cmd)
 
     parsed, args = parser.parse_known_args(argv)
 

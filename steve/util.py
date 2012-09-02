@@ -129,6 +129,28 @@ def get_project_config():
     return cp
 
 
+def get_from_config(cfg, key, section='project',
+                    error='"%(key)s" must be defined in steve.ini file.'):
+    """Retrieves specified key from config or errors
+
+    :arg cfg: the configuration
+    :arg key: key to retrieve
+    :arg section: the section to retrieve the key from
+    :arg error: the error to print to stderr if the key is not
+        there or if the value is empty
+
+    """
+    try:
+        value = cfg.get(section, key)
+        if value:
+            return value.strip()
+    except ConfigParser.NoOptionError:
+        pass
+
+    err(error % {'key': key})
+    return None
+
+
 def load_tags_file(config):
     """Opens the tags file and loads tags
 
