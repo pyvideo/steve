@@ -196,7 +196,7 @@ def status_cmd(cfg, parser, parsed, args):
     if not parsed.list and not parsed.quiet:
         out('Video status:')
 
-    files = steve.load_json_files(cfg)
+    files = load_json_files(cfg)
 
     if not files:
         if not parsed.list:
