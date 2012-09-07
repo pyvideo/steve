@@ -11,7 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import os
+import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -255,11 +256,11 @@ class Mock(object):
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name[0] == name[0].upper():
-            return type(name, (), {})
+            return Mock()
         else:
             return Mock()
 
 
-MOCK_MODULES = ['lxml']
+MOCK_MODULES = ['lxml', 'lxml.html']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
