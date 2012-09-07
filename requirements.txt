@@ -1,5 +1,17 @@
-Sphinx==1.1.3
-argparse==1.2.1
+BeautifulSoup
+Sphinx
+argparse
+beautifulsoup4
+blessings
+cssselect
+feedparser
+httplib2
+lxml
+nose
+pyquery
+requests
+slumber
+wsgiref
+
+# Doesn't work with other vidscrapers, yet.
 vidscraper==0.5.2
-slumber==0.4.2
-blessings==1.5
