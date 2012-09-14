@@ -261,6 +261,8 @@ def push_cmd(cfg, parser, parsed, args):
     username = get_from_config(cfg, 'username')
     api_url = get_from_config(cfg, 'api_url')
 
+    update = parsed.update
+
     # Command line api_key overrides config-set api_key
     api_key = parsed.apikey
     if not api_key:
@@ -337,6 +339,13 @@ def push_cmd(cfg, parser, parsed, args):
                         category, fn, this_cat))
                 errors = True
 
+    if update:
+        for fn, contents in data:
+            if not 'id' in contents:
+                err('id not in contents for "%s".' % fn)
+                errors = True
+                break
+
     if errors:
         err('Aborting.')
         return 1
@@ -346,6 +355,7 @@ def push_cmd(cfg, parser, parsed, args):
     out('Pushing to: %s' % api_url)
     out('Username:   %s' % username)
     out('api_key:    %s' % api_key)
+    out('update?:    %s' % update)
     out('Once you push, you can not undo it. Push for realz? Y/N')
     if not raw_input().strip().lower().startswith('y'):
         err('Aborting.')
@@ -354,37 +364,38 @@ def push_cmd(cfg, parser, parsed, args):
     for fn, contents in data:
         contents['category'] = category or contents.get('category')
 
-        # FIXME - it'd be nice to be able to do a "PUT" and update
-        # the item, but that doesn't work right if we're moving from
-        # server to server and the ids are different, so I'm going
-        # to nix that for now.
-        #
-        # Probably better to have it as a flag to the push command.
-        if 'id' in contents:
-            del contents['id']
+        if not update:
+            # Nix any id field since that causes problems.
+            if 'id' in contents:
+                del contents['id']
 
-        # # FIXME - check to see if video exists and if so, update it
-        # # instead.
-        # if contents.get('id') is not None:
-        #     out('Updating %s "%s" (%s)' % (
-        #             contents['id'], contents['title'], fn))
-        #     vid = api.video(contents['id']).put(
-        #         contents, username=username, api_key=api_key)
+            out('Pushing %s' % fn)
+            try:
+                vid = api.video.post(contents, username=username, api_key=api_key)
+                if 'id' in vid:
+                    contents['id'] = vid['id']
+                    out('   Now has id %s' % vid['id'])
+                else:
+                    err('   Errors?: %s' % vid)
+            except HttpClientError as exc:
+                err('   ClientErrors?: %s' % exc)
+                err('   "%s"' % exc.response.content)
+            except HttpServerError as exc:
+                err('   ServerErrors?: %s' % exc)
 
-        # else:
-        out('Pushing %s' % fn)
-        try:
-            vid = api.video.post(contents, username=username, api_key=api_key)
-            if 'id' in vid:
-                contents['id'] = vid['id']
-                out('   Now has id %s' % vid['id'])
-            else:
-                err('   Errors?: %s' % vid)
-        except HttpClientError as exc:
-            err('   ClientErrors?: %s' % exc)
-            err('   "%s"' % exc.response.content)
-        except HttpServerError as exc:
-            err('   ServerErrors?: %s' % exc)
+        else:
+            out('Updating %s "%s" (%s)' % (
+                    contents['id'], contents['title'], fn))
+            try:
+                vid = api.video(contents['id']).put(
+                    contents, username=username, api_key=api_key)
+            except HttpClientError as exc:
+                err('   ClientErrors?: %s' % exc)
+                err('   "%s"' % exc.response.content)
+                raise
+            except HttpServerError as exc:
+                err('   ServerErrors?: %s' % exc)
+                raise
 
         save_json_file(cfg, fn, contents)
 
@@ -445,6 +456,9 @@ def pull_cmd(cfg, parser, parsed, args):
         for bad_key in ('resource_uri',):
             if bad_key in video_data:
                 del video_data[bad_key]
+
+        # Add id.
+        video_data['id'] = video_id
 
         fn = 'json/%04d_%s.json' % (counter, video_data['slug'])
         data.append((fn, video_data))
@@ -515,6 +529,11 @@ def main(argv):
     push_parser.add_argument(
         '--apikey',
         help='pass in your API key via the command line')
+    push_parser.add_argument(
+        '--update',
+        action='store_true',
+        default=False,
+        help='update data rather than push new data (PUT vs. POST)')
     push_parser.set_defaults(func=push_cmd)
 
     pull_parser = subparsers.add_parser(
