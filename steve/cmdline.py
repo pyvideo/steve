@@ -69,11 +69,13 @@ url =
 # e.g. url = http://example.com/api/v1/
 api_url =
 
-# Your api key.
+# Your username and api key.
 #
 # Alternatively, you can pass this on the command line or put it in a
 # separate API_KEY file which you can keep out of version control.
-# e.g. api_key = OU812
+# e.g. username = willkg
+#      api_key = OU812
+# username =
 # api_key =
 """
 
