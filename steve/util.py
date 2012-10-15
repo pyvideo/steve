@@ -120,11 +120,35 @@ def get_project_config():
     except ConfigParser.NoOptionError:
         cp.set('project', 'projectpath', projectpath)
 
-    # API_KEY file overrides api_key set in config file.
-    apikey_path = os.path.join(projectpath, 'API_KEY')
-    if os.path.exists(apikey_path):
-        api_key = open(apikey_path).read().strip()
-        cp.set('project', 'api_key', api_key)
+    # If STEVE_CRED_FILE is specified in the environment or there's a
+    # cred_file in the config file, then open the file and pull the
+    # API information from there:
+    #
+    # * api_url
+    # * username
+    # * api_key
+    #
+    # This allows people to have a whole bunch of steve project
+    # directories and store their credentials in a central location.
+    cred_file = None
+    try:
+        cred_file = os.environ['STEVE_CRED_FILE']
+    except KeyError:
+        try:
+            cred_file = cp.get('project', 'cred_file')
+        except ConfigParser.NoOptionError:
+            pass
+
+    if cred_file:
+
+        cred_file = os.path.abspath(cred_file)
+
+        if os.path.exists(cred_file):
+            cfp = ConfigParser.ConfigParser()
+            cfp.read(cred_file)
+            cp.set('project', 'api_url', cfp.get('default', 'api_url'))
+            cp.set('project', 'username', cfp.get('default', 'username'))
+            cp.set('project', 'api_key', cfp.get('default', 'api_key'))
 
     return cp
 
@@ -362,6 +386,11 @@ def save_json_files(config, data, **kw):
 
     if 'sort_keys' not in kw:
         kw['sort_keys'] = True
+
+    projectpath = config.get('project', 'projectpath')
+    jsonpath = os.path.join(projectpath, 'json')
+    if not os.path.exists(jsonpath):
+        os.makedirs(jsonpath)
 
     for fn, contents in data:
         fp = open(fn, 'w')
