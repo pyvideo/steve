@@ -34,7 +34,8 @@ try:
     from steve.util import (
         YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
         out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
-        load_json_files, save_json_file, save_json_files, get_from_config)
+        load_json_files, save_json_file, save_json_files, get_from_config,
+        verify_json_files)
 except ImportError:
     sys.stderr.write(
         'The steve library is not on your sys.path.  Please install steve.\n')
@@ -237,6 +238,20 @@ def status_cmd(cfg, parser, parsed, args):
         out('In progress: %3d' % len(in_progress_files))
         out('Done:        %3d' % len(done_files))
 
+    return 0
+
+
+@with_config
+def verify_cmd(cfg, parser, parsed, args):
+    if not parsed.quiet:
+        parser.print_byline()
+
+    files = load_json_files(cfg)
+    if not files:
+        out('No files')
+        return 0
+
+    verify_json_files(files)
     return 0
 
 
@@ -518,6 +533,10 @@ def main(argv):
         default=False,
         help='lists files one per line with no other output')
     status_parser.set_defaults(func=status_cmd)
+
+    verify_parser = subparsers.add_parser(
+        'verify', help='verifies json data')
+    verify_parser.set_defaults(func=verify_cmd)
 
     scrapevideo_parser = subparsers.add_parser(
         'scrapevideo', help='fetches metadata for a video from a site')

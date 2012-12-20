@@ -1,0 +1,208 @@
+{
+  "whiteboard": {
+    "html": false, 
+    "null": false, 
+    "type": "CharField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "video_mp4_download_only": {
+    "html": false, 
+    "null": false, 
+    "type": "BooleanField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "video_webm_download_only": {
+    "html": false, 
+    "null": false, 
+    "type": "BooleanField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "video_ogv_download_only": {
+    "html": false, 
+    "null": false, 
+    "type": "BooleanField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "category": {
+    "html": false, 
+    "null": false, 
+    "type": "TextField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "speakers": {
+    "html": false, 
+    "null": false, 
+    "type": "TextArrayField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "title": {
+    "html": false, 
+    "null": false, 
+    "type": "CharField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "quality_notes": {
+    "html": true, 
+    "null": false, 
+    "type": "TextField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "tags": {
+    "html": false, 
+    "null": false, 
+    "type": "TextArrayField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "recorded": {
+    "html": false, 
+    "null": true, 
+    "type": "DateField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "state": {
+    "html": false, 
+    "null": false, 
+    "type": "IntegerField", 
+    "empty_strings": false, 
+    "choices": [
+      1, 
+      2
+    ]
+  }, 
+  "added": {
+    "html": false, 
+    "null": false, 
+    "type": "DateTimeField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "video_mp4_length": {
+    "html": false, 
+    "null": true, 
+    "type": "IntegerField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "description": {
+    "html": true, 
+    "null": false, 
+    "type": "TextField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "video_mp4_url": {
+    "html": false, 
+    "null": true, 
+    "type": "CharField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "video_flv_length": {
+    "html": false, 
+    "null": true, 
+    "type": "IntegerField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "copyright_text": {
+    "html": false, 
+    "null": true, 
+    "type": "TextField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "video_flv_download_only": {
+    "html": false, 
+    "null": false, 
+    "type": "BooleanField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "source_url": {
+    "html": false, 
+    "null": true, 
+    "type": "CharField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "video_webm_url": {
+    "html": false, 
+    "null": true, 
+    "type": "CharField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "video_ogv_length": {
+    "html": false, 
+    "null": true, 
+    "type": "IntegerField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "slug": {
+    "html": false, 
+    "null": false, 
+    "type": "SlugField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "video_ogv_url": {
+    "html": false, 
+    "null": true, 
+    "type": "CharField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "language": {
+    "html": false, 
+    "null": false, 
+    "type": "TextField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "video_webm_length": {
+    "html": false, 
+    "null": true, 
+    "type": "IntegerField", 
+    "empty_strings": false, 
+    "choices": []
+  }, 
+  "summary": {
+    "html": true, 
+    "null": false, 
+    "type": "TextField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "thumbnail_url": {
+    "html": false, 
+    "null": true, 
+    "type": "CharField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "video_flv_url": {
+    "html": false, 
+    "null": true, 
+    "type": "CharField", 
+    "empty_strings": true, 
+    "choices": []
+  }, 
+  "embed": {
+    "html": false, 
+    "null": true, 
+    "type": "TextField", 
+    "empty_strings": true, 
+    "choices": []
+  }
+}

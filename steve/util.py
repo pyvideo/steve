@@ -286,6 +286,46 @@ def vidscraper_to_dict(video, youtube_embed=None):
     return item
 
 
+def verify_json(data):
+    errors = []
+
+    fn = os.path.join(os.path.dirname(__file__), 'video_reqs.json')
+    requirements = json.load(open(fn))
+    for key, val in requirements.items():
+        if not val['null'] and not key in data:
+            errors.append('"%s" field is required' % key)
+
+        elif val['type'] == 'IntegerField':
+            if not isinstance(data[key], int):
+                errors.append('"%s" field must be an int' % key)
+            elif val['choices'] and data[key] not in val['choices']:
+                errors.append('"%s" field must be one of %s' % (
+                        key, val.choices))
+
+        elif val['type'] == 'TextField':
+            if not val['empty_strings'] and not data[key]:
+                errors.append('"%s" field can\'t be an empty string' % key)
+            elif val['html'] and not '<' in data[key]:
+                errors.append('"%s" field is HTML formatted' % key)
+
+        elif val['type'] == 'TextArrayField':
+            for mem in data[key]:
+                if not mem:
+                    errors.append('"%s" field has empty strings in it' % key)
+                    break
+
+    return errors
+
+
+def verify_json_files(json_files):
+    for filename, data in json_files:
+        errors = verify_json(data)
+        if errors:
+            print filename
+            for mem in errors:
+                print '   error: %s' % mem
+
+
 def wrap(text, indent=''):
     return (
         textwrap.TextWrapper(initial_indent=indent, subsequent_indent=indent)
