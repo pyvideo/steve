@@ -299,6 +299,8 @@ def verify_json(data):
 
     fn = os.path.join(os.path.dirname(__file__), 'video_reqs.json')
     requirements = json.load(open(fn))
+
+    # First, verify the data is correct.
     for key, val in requirements.items():
         if not val['null'] and not key in data:
             errors.append('"%s" field is required' % key)
@@ -326,6 +328,17 @@ def verify_json(data):
                 if not mem:
                     errors.append('"%s" field has empty strings in it' % key)
                     break
+
+    # Second check to make sure there aren't fields that shouldn't
+    # be there.
+    for key in data.keys():
+        # Ignore special cases. These will be there if the data
+        # was pulled via the richard API or if we did a push.
+        if key in ['id', 'updated']:
+            continue
+
+        if key not in requirements:
+            errors.append('"%s" field shouldn\'t be there.' % key)
 
     return errors
 
