@@ -49,7 +49,7 @@
     "choices": []
   }, 
   "quality_notes": {
-    "html": true, 
+    "html": false, 
     "null": false, 
     "type": "TextField", 
     "empty_strings": true, 
