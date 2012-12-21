@@ -1,3 +1,5 @@
+.. _steve-utils:
+
 =======================
  Using steve - library
 =======================
@@ -9,6 +11,19 @@ functions.
 
 .. contents::
    :local:
+
+
+Writing steve scripts
+=====================
+
+steve can be used for batch processing a bunch of JSON files.
+
+Most batch processing works this way:
+
+1. get the config file (:py:func:`steve.util.get_project_config`)
+2. get all the json files (:py:func:`steve.util.load_json_files`)
+3. iterate through the json files transforming the data
+4. save the json files (:py:func:`steve.util.save_json_files`)
 
 
 steve.util
@@ -28,6 +43,10 @@ steve.util
 
    .. autofunction:: scrapevideo(video_url)
 
+   .. autofunction:: verify_json(data)
+
+   .. autofunction:: verify_json_files(json_files)
+
 
 Recipes
 =======
@@ -37,15 +56,6 @@ Here's some sample code for doing batch transforms.
 
 Update language
 ---------------
-
-Most batch processing works this way:
-
-1. get the config file (:py:func:`steve.util.get_project_config`)
-2. get all the json files (:py:func:`steve.util.load_json_files`)
-3. iterate through the json files transforming the data
-4. save the json files (:py:func:`steve.util.save_json_files`)
-
-Let's show an example.
 
 This fixes the `language` property in each json file. It sets it to
 "Italian" if the word "Italiano" appears in the summary. Otherwise it

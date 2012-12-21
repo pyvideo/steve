@@ -12,8 +12,8 @@ Example use
 
 .. Note::
 
-   This is a conceptual example! Only some of this is vaguely
-   implemented!
+   This is a quick tutorial---you don't have to use steve like
+   this. Use it in a way that makes your work easier!
 
 1. Install steve.
 
@@ -30,9 +30,10 @@ Example use
 
 4. Edit ``steve.ini``::
 
-       [project]
-       # The name of this group of videos. For example, if this was a conference
-       # called EuroPython 2011, then you'd put:
+       [project] 
+
+       # The name of this group of videos. For example, if this was a
+       # conference called EuroPython 2011, then you'd put:
        # category = EuroPython 2011
        category = EuroPython 2011
 
@@ -71,27 +72,81 @@ Example use
 
    Lists titles and some other data for each video in the set.
 
-8. Edit the metadata. When you're done with a video, make sure to
+8. Edit the json metadata. When you're done with a video, make sure to
    clear the whiteboard field.
 
-   One way to do this is to do::
+   You can use the ``status`` command to make this easier::
 
        steve-cmd status --list | xargs vim
 
    and edit them by hand one-by-one.
 
-   TODO: steve should make this easier---provide batch transforms?
+   You can also write a script which uses functions in ``steve.util``
+   to automate fixing the metadata.
 
-9. Run: ``steve-cmd check``
+   For example, here's a script that takes the summary data, converts it
+   from reStructuredText to HTML and puts it in the description field::
 
-   This goes through all the json files and verifies correctness. Are
-   all the required key/value pairs present? Are the values of the
-   correct type? Are values that should be in HTML in HTML? Is the
-   HTML well-formed? Etc.
+       from docutils.core import publish_parts
 
-10. Run: ``steve-cmd push http://example.com/api/v1/``
+       from steve.util import (get_project_config, load_json_files,
+           save_json_files)
 
-    This pushes the new videos to your richard instance.
+
+       cfg = get_project_config()
+       data = load_json_files(cfg)
+
+
+       def parse(text):
+           settings = {
+               'initial_header_level': 2,
+               'transform_doctitle': 1
+               }
+           parts = publish_parts(
+               text, writer_name='html', settings_overrides=settings)
+           return parts['body']
+
+
+       for fn, contents in data:
+           print fn
+
+           summary = contents['summary'].strip()
+           summary_parsed = parse(summary)
+           if 'ERROR' in summary_parsed or 'WARNING' in summary_parsed:
+               print 'problem with %s' % fn
+               raise ValueError()
+
+           if not contents['description']:
+               contents['description'] = parse(summary)
+
+
+       save_json_files(cfg, data)
+
+
+   Conference data varies pretty widely, so writing scripts to
+   batch-process it to handle issues like this is super
+   helpful. Automate anything you can.
+
+   See the API documentation in :ref:`steve-utils`.
+
+9. Run: ``steve-cmd verify``
+
+   This goes through all the json files and verifies correctness.
+
+   Is the data of the correct type and shape?
+
+   Are required fields present?
+
+   Are values that should be in HTML in HTML?
+
+10. If you have write access for the API of the server, then you can
+    do::
+
+        steve-cmd push
+
+    Otherwise, tar up the project directory and send it to someone
+    who does.
+
 
 That's it!
 
