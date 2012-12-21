@@ -295,6 +295,9 @@ def verify_json(data):
         if not val['null'] and not key in data:
             errors.append('"%s" field is required' % key)
 
+        elif val['null'] and data[key] == None:
+            continue
+
         elif val['type'] == 'IntegerField':
             if not isinstance(data[key], int):
                 errors.append('"%s" field must be an int' % key)
@@ -305,6 +308,8 @@ def verify_json(data):
         elif val['type'] == 'TextField':
             if not val['empty_strings'] and not data[key]:
                 errors.append('"%s" field can\'t be an empty string' % key)
+            elif not data[key]:
+                continue
             elif val['html'] and not '<' in data[key]:
                 errors.append('"%s" field is HTML formatted' % key)
 
@@ -318,12 +323,17 @@ def verify_json(data):
 
 
 def verify_json_files(json_files):
+    haserrors = False
     for filename, data in json_files:
         errors = verify_json(data)
         if errors:
+            haserrors = True
             print filename
             for mem in errors:
                 print '   error: %s' % mem
+
+    if not haserrors:
+        print 'No errors.'
 
 
 def wrap(text, indent=''):

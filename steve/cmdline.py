@@ -252,6 +252,7 @@ def verify_cmd(cfg, parser, parsed, args):
         return 0
 
     verify_json_files(files)
+    out('Done!')
     return 0
 
 
