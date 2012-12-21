@@ -287,6 +287,14 @@ def vidscraper_to_dict(video, youtube_embed=None):
 
 
 def verify_json(data):
+    """Verify the data in a single json file.
+
+    :param data: The parsed contents of a JSON file. This should be a
+        Python dict.
+
+    :returns: list of error strings.
+    """
+
     errors = []
 
     fn = os.path.join(os.path.dirname(__file__), 'video_reqs.json')
@@ -323,17 +331,21 @@ def verify_json(data):
 
 
 def verify_json_files(json_files):
-    haserrors = False
-    for filename, data in json_files:
-        errors = verify_json(data)
-        if errors:
-            haserrors = True
-            print filename
-            for mem in errors:
-                print '   error: %s' % mem
+    """Verifies the data in a bunch of json files.
 
-    if not haserrors:
-        print 'No errors.'
+    Prints the output
+
+    :param json_files: list of (filename, parsed json data) tuples to
+        call verify_json on
+
+    :returns: dict mapping filenames to list of error strings
+    """
+    filename_to_errors = {}
+
+    for filename, data in json_files:
+        filename_to_errors[filename] = verify_json(data)
+
+    return filename_to_errors
 
 
 def wrap(text, indent=''):

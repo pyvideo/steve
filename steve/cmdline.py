@@ -251,7 +251,14 @@ def verify_cmd(cfg, parser, parsed, args):
         out('No files')
         return 0
 
-    verify_json_files(files)
+    filename_to_errors = verify_json_files(files)
+    for filename in sorted(filename_to_errors.keys()):
+        errors = filename_to_errors[filename]
+        if errors:
+            out(filename)
+            for error in errors:
+                out('  - ' + error)
+
     out('Done!')
     return 0
 
