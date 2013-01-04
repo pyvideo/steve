@@ -1,20 +1,9 @@
 #######################################################################
 # This file is part of steve.
 #
-# Copyright (C) 2012 Will Kahn-Greene
-# 
-# steve is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# steve is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with steve.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright (C) 2012, 2013 Will Kahn-Greene
+# Licensed under the Simplified BSD License. See LICENSE for full
+# license.
 #######################################################################
 
 from setuptools import setup, find_packages
@@ -42,7 +31,7 @@ setup(
     version=get_version(),
     description="Command line importer for richard",
     long_description=open(READMEFILE).read(),
-    license="GPL",
+    license="Simplified BSD License",
     author="Will Kahn-Greene",
     author_email="willg@bluesock.org",
     keywords="richard videos importer",
@@ -59,7 +48,7 @@ setup(
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
-        "License :: OSI Approved :: GNU General Public License (GPL)",
+        "License :: OSI Approved :: BSD License",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python",
         'Programming Language :: Python :: 2.6',
