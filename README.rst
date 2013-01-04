@@ -24,4 +24,4 @@ IRC:
     ``#richard`` on irc.mozilla.org
 
 License:
-    GPL v3.0
+    BSD
