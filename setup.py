@@ -41,7 +41,7 @@ setup(
     scripts=['scripts/steve-cmd'],
     install_requires=[
         "argparse",
-        "vidscraper==0.5.2",
+        "vidscraper",
         "blessings",
         "slumber",
         ],

@@ -12,6 +12,4 @@ pyquery
 requests
 slumber
 wsgiref
-
-# Doesn't work with other vidscrapers, yet.
-vidscraper==0.5.2
+vidscraper
