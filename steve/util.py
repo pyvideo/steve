@@ -223,7 +223,6 @@ def vidscraper_to_dict(video, youtube_embed=None):
     item['whiteboard'] = u'needs editing'
 
     item['title'] = video.title
-    item['category'] = 0
     item['summary'] = video.description
     item['description'] = u''
     item['quality_notes'] = u''
@@ -240,26 +239,26 @@ def vidscraper_to_dict(video, youtube_embed=None):
 
     item['thumbnail_url'] = video.thumbnail_url
 
-    if video.file_url_mimetype:
-        if video.file_url_mimetype in ('video/ogg', 'video/ogv'):
-            item['video_ogv_length'] = video.file_url_length
-            item['video_ogv_url'] = video.file_url
-            item['video_ogv_download_only'] = False
-        elif video.file_url_mimetype == 'video/mp4':
-            item['video_mp4_length'] = video.file_url_length
-            item['video_mp4_url'] = video.file_url
-            item['video_mp4_download_only'] = False
-        elif video.file_url_mimetype == 'video/webm':
-            item['video_webm_length'] = video.file_url_length
-            item['video_webm_url'] = video.file_url
-            item['video_webm_download_only'] = False
-        elif video.file_url_mimetype == 'video/x-flv':
-            item['video_flv_length'] = video.file_url_length
-            item['video_flv_url'] = video.file_url
-            item['video_flv_download_only'] = False
-        else:
-            raise ValueError('No clue what to do with %s' %
-                         video.file_url_mimetype)
+    if video.files:
+        for f in video.files:
+            if f.mime_type in ('video/ogg', 'video/ogv'):
+                item['video_ogv_length'] = f.length
+                item['video_ogv_url'] = f.url
+                item['video_ogv_download_only'] = False
+            elif f.mime_type == 'video/mp4':
+                item['video_mp4_length'] = f.length
+                item['video_mp4_url'] = f.url
+                item['video_mp4_download_only'] = False
+            elif f.mime_type == 'video/webm':
+                item['video_webm_length'] = f.length
+                item['video_webm_url'] = f.url
+                item['video_webm_download_only'] = False
+            elif f.mime_type == 'video/x-flv':
+                item['video_flv_length'] = f.length
+                item['video_flv_url'] = f.url
+                item['video_flv_download_only'] = False
+            else:
+                raise ValueError('No clue what to do with %s' % f.mime_type)
 
     item['embed'] = video.embed_code
 

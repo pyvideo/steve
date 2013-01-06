@@ -153,10 +153,10 @@ def fetch_cmd(cfg, parser, parsed, args):
         youtube_embed = None
 
     out('Scraping %s...' % url)
-    video_feed = vidscraper.auto_feed(url, crawl=True)
+    video_feed = vidscraper.auto_feed(url)
     video_feed.load()
 
-    print 'Found %d videos...' % video_feed.entry_count
+    print 'Found %d videos...' % video_feed.video_count
     for i, video in enumerate(video_feed):
         if video.title:
             filename = video.title.replace(' ', '_')
