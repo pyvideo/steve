@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<table>
+  {% for fn, data in data_files %}
+    <tr>
+      <td>{{ fn[5:] }}</td>
+      <td>{{ data.title }}</td>
+      <td>{{ data.whiteboard }}</td>
+      <td>
+        <a href="/edit/{{ fn[5:] }}">edit</a>
+      </td>
+    </tr>
+  {% endfor %}
+</table>
+{% endblock %}

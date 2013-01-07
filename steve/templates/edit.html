@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block style %}
+<style>
+th {
+  vertical-align: top;
+  text-align: right;
+  background: #ddddff;
+  padding-top: 10px;
+  padding-right: 15px;
+}
+td {
+  padding: 10px;
+}
+input[type='text'] {
+  width: 70em;
+  font: 10pt monospace;
+}
+textarea {
+  width: 70em;
+  height: 8em;
+  font: 10pt monospace;
+}
+.helptext {
+  padding-top: 3px;
+  font: 8pt sans-serif;
+  color: #6666aa;
+}
+.note {
+  font-weight: bold;
+  color: #bb0000;
+}
+.note code {
+  color: #000000;
+  padding: 2px 5px 2px 5px;
+  background: #ffbbbb;
+}
+.error {
+  padding-top: 3px;
+  background: #ffaaaa;
+  font: 10pt sans-serif;
+  font-weight: bold;
+  color: #bb0000;
+}
+</style>
+{% endblock %}
+{% block content %}
+<p>
+  {% if prev_fn %}
+    <a href="/edit/{{ prev_fn[5:] }}">PREV</a>
+  {% else %}
+    PREV
+  {% endif %}
+  | 
+  {% if next_fn %}
+    <a href="/edit/{{ next_fn[5:] }}">NEXT</a>
+  {% else %}
+    NEXT
+  {% endif %}
+</p>
+<p class="note">
+  Note: webedit doesn't currently verify data correctness. If you want
+  to verify the data, run <code>steve verify</code> from the command
+  line.
+</p>
+<form action="/save/{{ fn[5:] }}" method="POST">
+<table>
+  <tr>
+    <th>filename</th>
+    <td>{{ fn[5:] }}</td>
+  </tr>
+
+  {% for field in fields %}
+    <tr>
+      <th>{{ field.name }}</th>
+      <td>
+        {% if field.choices %}
+          <div>
+          {% for choice in field.choices %}
+            <input type="radio" name="{{ field.name }}" value="{{ choice }}"{{ ' checked' if choice == field.value }}>{{ choice }}
+          {% endfor %}
+          </div>
+          <div class="helptext">Pick a choice.</div>
+        {% elif field.type == 'IntegerField' %}
+          <div><input type="text" name="{{ field.name }}" value="{{ field.value }}"></div>
+          <div class="helptext">Integer value</div>
+        {% elif field.type == 'CharField' %}
+          <div><input type="text" name="{{ field.name }}" value="{{ field.value }}"></div>
+          <div class="helptext">Text</div>
+        {% elif field.type == 'DateField' %}
+          <div><input type="text" name="{{ field.name }}" value="{{ field.value }}"></div>
+          <div class="helptext">Date (ex. 2012-01-06)</div>
+        {% elif field.type == 'DateTimeField' %}
+          <div><input type="text" name="{{ field.name }}" value="{{ field.value }}"></div>
+          <div class="helptext">Datetime (ex. 2012-01-06T11:25:01Z)</div>
+        {% elif field.type == 'SlugField' %}
+          <div><input type="text" name="{{ field.name }}" value="{{ field.value }}"></div>
+          <div class="helptext">Slug</div>
+        {% elif field.type == 'TextField' %}
+          <div><textarea name="{{ field.name }}">{{ field.value }}</textarea></div>
+          <div class="helptext">Text{{ ': HTML formatted' if field.html }}</div>
+        {% elif field.type == 'BooleanField' %}
+          <input type="radio" name="{{ field.name }}" value="0"{{ ' checked' if not field.value }}>False
+          <input type="radio" name="{{ field.name }}" value="1"{{ ' checked' if field.value }}>True
+        {% elif field.type == 'TextArrayField' %}
+          <div><textarea name="{{ field.name }}" cols=60 rows=4>{{ field.value|join('\n') }}</textarea></div>
+          <div class="helptext">List of items, one per line</div>
+        {% else %}
+          <div>{{ field.value }}</div>
+        {% endif %}
+        {% if field.error %}
+          <div class="error">{{ field.error }}</div>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  <tr>
+    <td>&nbsp;</td>
+    <td><input type="Reset"><input type="Submit" value="Save data"></td>
+  </tr>
+</table>
+</form>
+{% endblock %}

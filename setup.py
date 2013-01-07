@@ -44,6 +44,7 @@ setup(
         "vidscraper",
         "blessings",
         "slumber",
+        "jinja2"
         ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
