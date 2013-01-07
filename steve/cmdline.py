@@ -25,6 +25,7 @@ try:
         out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
         load_json_files, save_json_file, save_json_files, get_from_config,
         verify_json_files)
+    from steve.webedit import serve
 except ImportError:
     sys.stderr.write(
         'The steve library is not on your sys.path.  Please install steve.\n')
@@ -418,6 +419,12 @@ def push_cmd(cfg, parser, parsed, args):
 
 
 @with_config
+def webedit_cmd(cfg, parser, parsed, args):
+    parser.print_byline()
+    serve()
+
+
+@with_config
 def pull_cmd(cfg, parser, parsed, args):
     if not parsed.quiet:
         parser.print_byline()
@@ -561,6 +568,10 @@ def main(argv):
         '--apikey',
         help='pass in your API key via the command line')
     pull_parser.set_defaults(func=pull_cmd)
+
+    webedit_parser = subparsers.add_parser(
+        'webedit', help='launches web server so you can edit in browser')
+    webedit_parser.set_defaults(func=webedit_cmd)
 
     parsed, args = parser.parse_known_args(argv)
 

@@ -305,6 +305,8 @@ def verify_json(data, category=None):
     :returns: list of error strings.
     """
 
+    # TODO: rewrite this to return a dict of fieldname -> list of
+    # errors
     errors = []
     requirements = get_video_requirements()
 
