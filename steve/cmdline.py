@@ -186,6 +186,7 @@ def status_cmd(cfg, parser, parsed, args):
 
     if not parsed.list and not parsed.quiet:
         out('Video status:')
+        out('')
 
     files = load_json_files(cfg)
 
@@ -200,9 +201,9 @@ def status_cmd(cfg, parser, parsed, args):
     in_progress_files = []
 
     for fn, contents in files:
-        whiteboard = contents.get('whiteboard')
+        whiteboard = contents.get('whiteboard', '')
         if whiteboard:
-            in_progress_files.append(fn)
+            in_progress_files.append((fn, whiteboard))
         else:
             done_files.append(fn)
 
@@ -212,15 +213,15 @@ def status_cmd(cfg, parser, parsed, args):
 
     else:
         if in_progress_files:
-            for fn in in_progress_files:
+            for fn, whiteboard in in_progress_files:
                 out(u'%s: %s' % (fn, term.bold(whiteboard)),
-                          wrap=False)
+                    wrap=False)
 
         if done_files:
             out('')
             for fn in done_files:
                 out('%s: %s' % (fn, term.bold(term.green('Done!'))),
-                          wrap=False)
+                    wrap=False)
 
         out('')
         out('In progress: %3d' % len(in_progress_files))
