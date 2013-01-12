@@ -273,48 +273,84 @@ def vidscraper_to_dict(video, youtube_embed=None):
     return item
 
 
-def verify_json(data):
+def get_video_requirements():
+    fn = os.path.join(os.path.dirname(__file__), 'video_reqs.json')
+    fp = open(fn)
+    data = json.load(fp)
+    fp.close()
+    return data
+
+
+def _required(data):
+    if (data['null']
+        or data['has_default']
+        or data['empty_strings']):
+        return False
+    return True
+
+
+def verify_json(data, category=None):
     """Verify the data in a single json file.
 
     :param data: The parsed contents of a JSON file. This should be a
         Python dict.
+    :param category: The category as specified in the config.ini file.
+
+        If the config.ini has a category, then every data file either
+        has to have the same category or no category at all.
+
+        This is None if no category is specified in which case every
+        data file has to have a category.
 
     :returns: list of error strings.
     """
 
     errors = []
-
-    fn = os.path.join(os.path.dirname(__file__), 'video_reqs.json')
-    requirements = json.load(open(fn))
+    requirements = get_video_requirements()
 
     # First, verify the data is correct.
-    for key, val in requirements.items():
-        if not val['null'] and not key in data:
+    for req in requirements:
+        key = req['name']
+
+        if key == 'category':
+            # Category is a special case since we can specify it
+            # in the config.ini file.
+
+            if category is None and key not in data:
+                errors.append(
+                    '"category" must be in either config.ini or data file')
+            elif key in data and data[key] != category:
+                errors.append(
+                    '"%s" field does not match config.ini category' % key)
+
+        elif _required(req) and key not in data:
             errors.append('"%s" field is required' % key)
 
-        elif val['null'] and data[key] == None:
+        elif req['null'] and data.get(key) == None:
             continue
 
-        elif val['type'] == 'IntegerField':
+        elif req['type'] == 'IntegerField':
             if not isinstance(data[key], int):
                 errors.append('"%s" field must be an int' % key)
-            elif val['choices'] and data[key] not in val['choices']:
+            elif req['choices'] and data[key] not in req['choices']:
                 errors.append('"%s" field must be one of %s' % (
-                        key, val.choices))
+                        key, req.choices))
 
-        elif val['type'] == 'TextField':
-            if not val['empty_strings'] and not data[key]:
+        elif req['type'] == 'TextField':
+            if not req['empty_strings'] and not data[key]:
                 errors.append('"%s" field can\'t be an empty string' % key)
             elif not data[key]:
                 continue
-            elif val['html'] and not '<' in data[key]:
-                errors.append('"%s" field is HTML formatted' % key)
+            elif req['html'] and not '<' in data[key]:
+                errors.append('"%s" field should be HTML formatted' % key)
 
-        elif val['type'] == 'TextArrayField':
+        elif req['type'] == 'TextArrayField':
             for mem in data[key]:
                 if not mem:
                     errors.append('"%s" field has empty strings in it' % key)
                     break
+
+    required_keys = [req['name'] for req in requirements]
 
     # Second check to make sure there aren't fields that shouldn't
     # be there.
@@ -324,13 +360,13 @@ def verify_json(data):
         if key in ['id', 'updated']:
             continue
 
-        if key not in requirements:
+        if key not in required_keys:
             errors.append('"%s" field shouldn\'t be there.' % key)
 
     return errors
 
 
-def verify_json_files(json_files):
+def verify_json_files(json_files, category=None):
     """Verifies the data in a bunch of json files.
 
     Prints the output
@@ -338,12 +374,20 @@ def verify_json_files(json_files):
     :param json_files: list of (filename, parsed json data) tuples to
         call verify_json on
 
+    :param category: The category as specified in the config.ini file.
+
+        If the config.ini has a category, then every data file either
+        has to have the same category or no category at all.
+
+        This is None if no category is specified in which case every
+        data file has to have a category.
+
     :returns: dict mapping filenames to list of error strings
     """
     filename_to_errors = {}
 
     for filename, data in json_files:
-        filename_to_errors[filename] = verify_json(data)
+        filename_to_errors[filename] = verify_json(data, category)
 
     return filename_to_errors
 
