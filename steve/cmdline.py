@@ -240,7 +240,8 @@ def verify_cmd(cfg, parser, parsed, args):
         out('No files')
         return 0
 
-    filename_to_errors = verify_json_files(files)
+    filename_to_errors = verify_json_files(
+        files, cfg.get('project', 'category'))
     for filename in sorted(filename_to_errors.keys()):
         errors = filename_to_errors[filename]
         if errors:
