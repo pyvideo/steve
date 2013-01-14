@@ -72,62 +72,84 @@ Example use
 
    Lists titles and some other data for each video in the set.
 
-8. Edit the json metadata. When you're done with a video, make sure to
-   clear the whiteboard field.
+8. Now you go through and edit the json metadata. There are a few ways
+   to do this. **Don't** just pick one way---mix and match them to
+   reduce the work required.
 
-   You can use the ``status`` command to make this easier::
+   Use the `whiteboard` field to keep track of which videos still have
+   problems and/or things that need to be done with them and/or just
+   haven't been edited, yet.
 
-       steve-cmd status --list | xargs vim
+   1. **Edit with your favorite editor.**
 
-   and edit them by hand one-by-one.
+      You can use the ``status`` command to make this easier::
 
-   You can also write a script which uses functions in ``steve.util``
-   to automate fixing the metadata.
+          steve-cmd status --list | xargs vim
 
-   For example, here's a script that takes the summary data, converts it
-   from reStructuredText to HTML and puts it in the description field::
+      and edit them by hand one-by-one.
 
-       from docutils.core import publish_parts
+   2. **Write a script to batch-process the files.**
 
-       from steve.util import (get_project_config, load_json_files,
-           save_json_files)
+      You can also write a script which uses functions in
+      ``steve.util`` to automate fixing the metadata.
 
+      For example, here's a script that takes the summary data,
+      converts it from reStructuredText to HTML and puts it in the
+      description field::
 
-       cfg = get_project_config()
-       data = load_json_files(cfg)
+          from docutils.core import publish_parts
 
-
-       def parse(text):
-           settings = {
-               'initial_header_level': 2,
-               'transform_doctitle': 1
-               }
-           parts = publish_parts(
-               text, writer_name='html', settings_overrides=settings)
-           return parts['body']
+          from steve.util import (get_project_config, load_json_files,
+              save_json_files)
 
 
-       for fn, contents in data:
-           print fn
-
-           summary = contents['summary'].strip()
-           summary_parsed = parse(summary)
-           if 'ERROR' in summary_parsed or 'WARNING' in summary_parsed:
-               print 'problem with %s' % fn
-               raise ValueError()
-
-           if not contents['description']:
-               contents['description'] = parse(summary)
+          cfg = get_project_config()
+          data = load_json_files(cfg)
 
 
-       save_json_files(cfg, data)
+          def parse(text):
+              settings = {
+                  'initial_header_level': 2,
+                  'transform_doctitle': 1
+                  }
+              parts = publish_parts(
+                  text, writer_name='html', settings_overrides=settings)
+              return parts['body']
 
 
-   Conference data varies pretty widely, so writing scripts to
-   batch-process it to handle issues like this is super
-   helpful. Automate anything you can.
+          for fn, contents in data:
+              print fn
 
-   See the API documentation in :ref:`steve-utils`.
+              summary = contents['summary'].strip()
+              summary_parsed = parse(summary)
+              if 'ERROR' in summary_parsed or 'WARNING' in summary_parsed:
+                  print 'problem with %s' % fn
+                  raise ValueError()
+
+              if not contents['description']:
+                  contents['description'] = parse(summary)
+
+
+          save_json_files(cfg, data)
+
+
+      Conference data varies pretty widely, so writing scripts to
+      batch-process it to handle issues like this is super
+      helpful. Automate anything you can.
+
+      See the API documentation in :ref:`steve-utils`.
+
+   3. **Use the web editor.**
+
+      steve comes with a bare-bones web-based editor for the json files.
+      To launch it from the project directory, do::
+
+          steve-cmd webedit
+
+      then point your browser at the url in the output.
+
+      This is helpful when you have a few things to fix and don't feel
+      like writing json.
 
 9. Run: ``steve-cmd verify``
 
@@ -144,19 +166,14 @@ Example use
 
         steve-cmd push
 
-    Otherwise, tar up the project directory and send it to someone
-    who does.
+    Otherwise, tar up the project directory and send it to someone who
+    does.
 
 
 That's it!
 
 .. Note::
 
-   I highly recommend you use version control for your steve project
-   and back up the data to a different machine periodically. It
-   doesn't matter which version control system you use. It doesn't
-   matter how you back it up. However, it does matter that you do
-   these things so you aren't sad later on when the inevitable
-   happens.
-
-
+   Use version control for your steve project and commit changes to
+   it. Make sure you back it up, too! Don't lose everything you've
+   done because you wrote a bad batch-processing script!
