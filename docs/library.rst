@@ -22,7 +22,7 @@ Most batch processing works this way:
 
 1. get the config file (:py:func:`steve.util.get_project_config`)
 2. get all the json files (:py:func:`steve.util.load_json_files`)
-3. iterate through the json files transforming the data
+3. iterate through the json files transforming the data (Python for loop)
 4. save the json files (:py:func:`steve.util.save_json_files`)
 
 
@@ -51,7 +51,14 @@ steve.util
 Recipes
 =======
 
-Here's some sample code for doing batch transforms.
+Here's some sample code for doing batch transforms. Each script should
+be located in the project directory root next to the ``steve.ini`` file.
+Make sure the steve package is installed and then run the script with
+the python interpreter::
+
+    python name_of_my_script.py
+
+Or however you want to structure and/or run it.
 
 
 Update language
@@ -77,5 +84,41 @@ sets it to "English".
             contents['language'] = u'Italian'
         else:
             contents['language'] = u'English'
+
+    steve.util.save_json_files(cfg, data)
+
+
+Move speaker from summary to speakers
+-------------------------------------
+
+This removes the first line of the summary and puts it in the speakers
+field.
+
+::
+
+    import steve.util
+
+    cfg = steve.util.get_project_config()
+    data = steve.util.load_json_files(cfg)
+
+    for fn, contents in data:
+        print fn
+
+        # If the data already has speakers, then we assume we've already
+        # operated on it and don't operate on it again.
+        if contents['speakers']:
+            continue
+
+        summary = contents['summary']
+        summary = summary.split('\n')
+
+        # The speakers field is a list of strings. So we remove the first
+        # line of the summary, strip the whitespace from it, and put that
+        # in the speakers field.
+        # (NB: This bombs out if the summary field is empty.)
+        contents['speakers'].append(summary.pop(0).strip())
+
+        # Put the rest of the summary back.
+        contents['summary'] = '\n'.join(summary)
 
     steve.util.save_json_files(cfg, data)

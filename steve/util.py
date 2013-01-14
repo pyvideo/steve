@@ -59,6 +59,8 @@ class ConfigNotFound(Exception):
 def with_config(fun):
     """Decorator that passes config as first argument
 
+    :raises ConfigNotFound: if the config file can't be found
+
     This calls :py:func:`get_project_config`. If that returns a
     configuration object, then this passes that as the first argument
     to the decorated function. If :py:func:`get_project_config` doesn't
@@ -294,9 +296,9 @@ def verify_json(data, category=None):
 
     :param data: The parsed contents of a JSON file. This should be a
         Python dict.
-    :param category: The category as specified in the config.ini file.
+    :param category: The category as specified in the steve.ini file.
 
-        If the config.ini has a category, then every data file either
+        If the steve.ini has a category, then every data file either
         has to have the same category or no category at all.
 
         This is None if no category is specified in which case every
@@ -316,14 +318,14 @@ def verify_json(data, category=None):
 
         if key == 'category':
             # Category is a special case since we can specify it
-            # in the config.ini file.
+            # in the steve.ini file.
 
             if category is None and key not in data:
                 errors.append(
-                    '"category" must be in either config.ini or data file')
+                    '"category" must be in either steve.ini or data file')
             elif key in data and data[key] != category:
                 errors.append(
-                    '"%s" field does not match config.ini category' % key)
+                    '"%s" field does not match steve.ini category' % key)
 
         elif _required(req) and key not in data:
             errors.append('"%s" field is required' % key)
@@ -376,9 +378,9 @@ def verify_json_files(json_files, category=None):
     :param json_files: list of (filename, parsed json data) tuples to
         call verify_json on
 
-    :param category: The category as specified in the config.ini file.
+    :param category: The category as specified in the steve.ini file.
 
-        If the config.ini has a category, then every data file either
+        If the steve.ini has a category, then every data file either
         has to have the same category or no category at all.
 
         This is None if no category is specified in which case every

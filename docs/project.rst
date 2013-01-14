@@ -41,3 +41,7 @@ I worked on it on and off while simultaneously working on adding the
 EuroPython 2011 conference videos to `pyvideo.org
 <http://pyvideo.org/>`_ and helping Carl with some of the conferences
 he was working on.
+
+Then I continued working on it until I thought it was at the point
+where someone else could use it to generate conference metadata. That
+point happened on January 13th, 2013 when I released version 0.1.
