@@ -13,14 +13,9 @@ There are a few ways to install steve. This document covers them.
 Installing a released version
 =============================
 
-There are no releases of steve.
+You can install steve using pip::
 
-At some point, when I release a version of steve and put it on PyPI,
-then you'll be able to do this:
-
-1. ``pip install steve``
-
-Unfortunately, we're not there, yet.
+    pip install steve
 
 
 Installing a bleeding edge version
@@ -56,7 +51,7 @@ git clone and installing from that:
     3. ``git pull --rebase``
 
 
-installing a Bleeding edge for hacking purposes
+Installing a Bleeding edge for hacking purposes
 ===============================================
 
 If you want to install steve in a way that makes it easy to hack on,

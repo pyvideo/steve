@@ -26,6 +26,10 @@ Example use
    1. a ``steve.ini`` project config file.
    2. a ``json`` directory which hold the video metadata json files.
 
+   This is usually where I store all the batch-processing scripts I
+   write to manipulate the metadata, too, since this is the project
+   directory that the config file is in.
+
 3. ``cd europython2011``
 
 4. Edit ``steve.ini``::
