@@ -43,7 +43,6 @@ setup(
         "argparse",
         "vidscraper",
         "blessings",
-        "slumber",
         "jinja2"
         ],
     classifiers=[

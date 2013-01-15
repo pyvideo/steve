@@ -9,12 +9,6 @@ vidscraper
 * `vidscraper documentation <http://vidscraper.readthedocs.org/en/latest/>`_
 
 
-slumber
-=======
-
-* `slumber <http://slumber.in/>`_
-
-
 richard api docs
 ================
 

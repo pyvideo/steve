@@ -14,22 +14,22 @@ import sys
 
 import argparse
 import blessings
-import slumber
 import vidscraper
-from slumber.exceptions import HttpServerError, HttpClientError
 
 try:
     import steve
-    from steve.util import (
-        YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
-        out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
-        load_json_files, save_json_file, save_json_files, get_from_config,
-        verify_json_files)
-    from steve.webedit import serve
 except ImportError:
     sys.stderr.write(
         'The steve library is not on your sys.path.  Please install steve.\n')
     sys.exit(1)
+
+import steve.restapi
+from steve.util import (
+    YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
+    out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
+    load_json_files, save_json_file, save_json_files, get_from_config,
+    verify_json_files)
+from steve.webedit import serve
 
 
 BYLINE = ('steve-cmd: %s (%s). ' % (steve.__version__, steve.__releasedate__))
@@ -70,28 +70,6 @@ api_url =
 """
 
 ALLOWED_LETTERS = string.ascii_letters + string.digits + '-_'
-
-
-# FIXME: This is needed for steve to work, but it breaks Carl's stuff,
-# but I'm not sure why.
-
-def monkeypatch_slumber():
-    def post(self, data, **kwargs):
-        s = self.get_serializer()
-        resp = self._request("POST", data=s.dumps(data), params=kwargs)
-        if 200 <= resp.status_code <= 299:
-            if resp.status_code == 201:
-                # @@@ Hacky, see description in __call__
-                resource_obj = self(url_override=resp.headers["location"])
-                return resource_obj.get(**kwargs)
-            else:
-                return resp.content
-        elif 500 <= resp.status_code <= 599:
-            raise slumber.exceptions.HttpServerError(
-                "Server Error %s" % resp.status_code,
-                response=resp, content=resp.content)
-        return resp.content
-    slumber.Resource.post = post
 
 
 def createproject_cmd(parser, parsed, args):
@@ -269,9 +247,6 @@ def push_cmd(cfg, parser, parsed, args):
     if not parsed.quiet:
         parser.print_byline()
 
-    # Monkeypatch slumber to suck less.
-    monkeypatch_slumber()
-
     # Get username, api_url and api_key.
 
     username = get_from_config(cfg, 'username')
@@ -312,10 +287,10 @@ def push_cmd(cfg, parser, parsed, args):
     # Go through and make sure there aren't any problems with
     # categories.
 
-    api = slumber.API(api_url)
+    api = steve.restapi.API(api_url)
 
     # Build a dict of cat title -> cat data.
-    all_categories = api.category.get(limit=0)
+    all_categories = steve.restapi.get_content(api.category.get(limit=0))
     all_categories = dict([(cat['title'], cat)
                            for cat in all_categories['objects']])
 
@@ -387,31 +362,28 @@ def push_cmd(cfg, parser, parsed, args):
 
             out('Pushing %s' % fn)
             try:
-                vid = api.video.post(contents, username=username, api_key=api_key)
+                vid = steve.restapi.get_content(
+                    api.video.post(contents, username=username,
+                                   api_key=api_key))
                 if 'id' in vid:
                     contents['id'] = vid['id']
                     out('   Now has id %s' % vid['id'])
                 else:
                     err('   Errors?: %s' % vid)
-            except HttpClientError as exc:
-                err('   ClientErrors?: %s' % exc)
+            except steve.restapi.RestAPIException as exc:
+                err('   Error?: %s' % exc)
                 err('   "%s"' % exc.response.content)
-            except HttpServerError as exc:
-                err('   ServerErrors?: %s' % exc)
 
         else:
             out('Updating %s "%s" (%s)' % (
                     contents['id'], contents['title'], fn))
             try:
-                vid = api.video(contents['id']).put(
-                    contents, username=username, api_key=api_key)
-            except HttpClientError as exc:
-                err('   ClientErrors?: %s' % exc)
+                vid = steve.restapi.get_content(
+                    api.video(contents['id']).put(
+                        contents, username=username, api_key=api_key))
+            except steve.restapi.RestAPIException as exc:
+                err('   Error?: %s' % exc)
                 err('   "%s"' % exc.response.content)
-                raise
-            except HttpServerError as exc:
-                err('   ServerErrors?: %s' % exc)
-                raise
 
         save_json_file(cfg, fn, contents)
 
@@ -448,10 +420,11 @@ def pull_cmd(cfg, parser, parsed, args):
     if not username or not api_url or not cat_title or not api_key:
         return 1
 
-    api = slumber.API(api_url)
+    api = steve.restapi.API(api_url)
 
-    all_categories = api.category.get(username=username, api_key=api_key,
-                                      limit=0)
+    all_categories = steve.restapi.get_content(
+        api.category.get(username=username, api_key=api_key,
+                         limit=0))
     cat = [cat_item for cat_item in all_categories['objects']
            if cat_item['title'] == cat_title]
 
@@ -470,7 +443,9 @@ def pull_cmd(cfg, parser, parsed, args):
         # Lame, but good enough for now.
         video_id = video_url.split('/')[-2]
 
-        video_data = api.video(int(video_id)).get(username=username, api_key=api_key)
+        video_data = steve.restapi.get_content(
+            api.video(video_id).get(username=username,
+                                    api_key=api_key))
 
         out('Working on "%s"' % video_data['slug'])
 
@@ -508,12 +483,6 @@ def main(argv):
         action='store_true',
         default=False,
         help='runs steve quietly--only prints errors')
-
-    # parser.add_argument(
-    #     '--debug',
-    #     action='store_true',
-    #     default=False,
-    #     help='runs steve in debug mode--no sending email.')
 
     subparsers = parser.add_subparsers(
         title='Commands',

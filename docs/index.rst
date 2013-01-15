@@ -28,6 +28,7 @@ User/Contributor Guide
    installation
    commandline
    library
+   restapi
    hacking
    resources
 
