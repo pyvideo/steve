@@ -27,8 +27,8 @@ import steve.restapi
 from steve.util import (
     YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
     out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
-    load_json_files, save_json_file, save_json_files, get_from_config,
-    verify_json_files)
+    get_all_categories, load_json_files, save_json_file, save_json_files,
+    get_from_config, verify_json_files)
 from steve.webedit import serve
 
 
@@ -289,10 +289,8 @@ def push_cmd(cfg, parser, parsed, args):
 
     api = steve.restapi.API(api_url)
 
-    # Build a dict of cat title -> cat data.
-    all_categories = steve.restapi.get_content(api.category.get(limit=0))
     all_categories = dict([(cat['title'], cat)
-                           for cat in all_categories['objects']])
+                           for cat in get_all_categories(api_url)])
 
     try:
         category = cfg.get('project', 'category')
