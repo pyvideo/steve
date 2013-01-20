@@ -18,7 +18,9 @@ import requests
 
 
 class RestAPIException(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        self.__dict__.update(kwargs)
+        super(RestAPIException, self).__init__(*args)
 
 
 class Http4xxException(RestAPIException):
@@ -32,7 +34,7 @@ class Http5xxException(RestAPIException):
 def urljoin(base, *args):
     """Add bits to the url path."""
     parts = list(urlparse.urlsplit(base))
-    path = parts[2].split('/')
+    path = [p for p in parts[2].split('/') if p]
     path.extend(args)
     parts[2] = '/'.join(path)
     return urlparse.urlunsplit(parts)
