@@ -15,6 +15,8 @@ to move data back and forth.
 steve.richardapi
 ================
 
+.. versionadded:: 0.2
+
 .. Note::
 
    Carl, Ryan: These functions are for you!
