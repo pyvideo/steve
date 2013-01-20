@@ -97,6 +97,7 @@ def get_content(resp):
        Mostly this just deals with the fact that requests changed
        `.json` from a property to a method. Once that settles out and
        we can use requests >= 1.0, then we can ditch this.
+
     """
     try:
         # requests changed from a .json property to a .json method,
@@ -120,6 +121,7 @@ class Resource(object):
 
     HTTP methods return requests Response objects or throw
     exceptions in cases where things are weird.
+
     """
     def __init__(self, **kwargs):
         self._kwargs = kwargs

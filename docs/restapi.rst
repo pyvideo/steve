@@ -76,16 +76,3 @@ steve.restapi
    .. autoclass:: Http4xxException
 
    .. autoclass:: Http5xxException
-
-
-Using the utility functions for REST API automation (for Carl/Ryan)
-===================================================================
-
-.. Note::
-
-   Carl, Ryan: These functions are for you!
-
-.. automodule:: steve.util
-
-   .. autofunction:: get_all_categories(api_url)
-

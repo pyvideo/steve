@@ -17,8 +17,6 @@ from functools import wraps
 
 import vidscraper
 
-from steve import restapi
-
 
 YOUTUBE_EMBED = {
     'object': (
@@ -34,6 +32,18 @@ YOUTUBE_EMBED = {
         '<iframe id="player" width="640" height="390" frameborder="0" '
         'src="http://youtube.com/v/%(guid)s"></iframe>')
     }
+
+
+class SteveException(Exception):
+    """Base steve exception"""
+    def __init__(self, *args, **kwargs):
+        self.__dict__.update(kwargs)
+        super(SteveException, self).__init__(*args)
+
+
+class ConfigNotFound(SteveException):
+    """Denotes the config file couldn't be found"""
+    pass
 
 
 class BetterArgumentParser(argparse.ArgumentParser):
@@ -53,10 +63,6 @@ class BetterArgumentParser(argparse.ArgumentParser):
     def print_usage(self, file=None):
         self.print_byline(file)
         argparse.ArgumentParser.print_usage(self, file)
-
-
-class ConfigNotFound(Exception):
-    """Denotes the config file couldn't be found"""
 
 
 def with_config(fun):
@@ -567,30 +573,3 @@ def scrapevideo(video_url):
                                      {'guid': guid})
 
     return data
-
-
-def get_all_categories(api_url):
-    """Given an api_url, retrieves all categories
-
-    :arg api_url: URL for the api.
-
-    :returns: list of dicts each belonging to a category
-
-    :raises steve.restapi.Http5xxException: if there's a server
-        error
-
-    Example:
-
-    >>> from steve.util import get_all_categories
-    >>> cats = get_all_categories('http://pyvideo.org/api/v1/')
-    >>> [cat['title'] for cat in cats]
-    [u'PyCon 2012', u'PyCon 2011', ...]
-    """
-
-    api = restapi.API(api_url)
-
-    # Build a dict of cat title -> cat data.
-    all_categories = restapi.get_content(api.category.get(limit=0))
-
-    return all_categories['objects']
-

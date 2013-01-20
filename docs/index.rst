@@ -29,6 +29,7 @@ User/Contributor Guide
    commandline
    library
    restapi
+   richardapi
    hacking
    resources
 
