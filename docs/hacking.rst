@@ -53,18 +53,10 @@ Generally speaking:
 Running and writing tests
 =========================
 
-.. Note::
+steve comes with unit tests.  Unit tests are executed using `nose`_.
+If you don't already have nose installed, then install it with::
 
-   steve doesn't actually have any tests at all, yet. So this section
-   is a total lie at the moment. I'm leaving it in as a reminder that
-   it's a total lie and that I should fix this situation.
-
-
-steve comes with unit tests.  Unit tests are executed using `nose`_
-and use `fudge`_ as a mocking framework.  If you don't already have
-nose and fudge installed, then install them with::
-
-    pip install nose fudge
+    pip install nose
 
 I like to use `nose-progressive`_, too, because it's awesome.  To
 install that::
@@ -83,4 +75,3 @@ With nose-progressive and fail-fast::
 
 .. _nose-progressive: http://pypi.python.org/pypi/nose-progressive/
 .. _nose: http://code.google.com/p/python-nose/
-.. _fudge: http://farmdev.com/projects/fudge/
