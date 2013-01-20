@@ -24,10 +24,59 @@ class RestAPIException(Exception):
 
 
 class Http4xxException(RestAPIException):
+    """Exception for 4xx errors.
+
+    These usually mean you did something wrong.
+
+    :property response: The full requests `Response` object.
+
+    Example::
+
+        from steve.restapi import Http4xxException
+
+        try:
+            # do something here
+        except Http5xxException as exc:
+            # oh noes! i did something wrogn!
+
+            # This tells you the actual HTTP status code
+            print exc.response.status_code
+
+            # This tells you the content of the response---sometimes
+            # the server will tell you an error message and it's
+            # probably in here.
+            print exc.response.content
+
+    """
     pass
 
 
 class Http5xxException(RestAPIException):
+    """Exception for 5xx errors.
+
+    These usually mean the server did something wrong. Let me know.
+
+    :property response: The full requests `Response` object.
+
+    Example::
+
+        from steve.restapi import Http5xxException
+
+        try:
+            # do something here
+        except Http5xxException as exc:
+            # oh noes! i hit dumb willkg code and server is br0ken!
+
+            # This tells you the actual HTTP status code
+            print exc.response.status_code
+
+            # This tells you the content of the response---sometimes
+            # the server will tell you an error message and it's
+            # probably in here.
+            print exc.response.content
+
+    """
+
     pass
 
 

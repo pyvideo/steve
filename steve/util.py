@@ -17,6 +17,9 @@ from functools import wraps
 
 import vidscraper
 
+from steve import restapi
+
+
 YOUTUBE_EMBED = {
     'object': (
         '<object width="640" height="390"><param name="movie" '
@@ -564,3 +567,30 @@ def scrapevideo(video_url):
                                      {'guid': guid})
 
     return data
+
+
+def get_all_categories(api_url):
+    """Given an api_url, retrieves all categories
+
+    :arg api_url: URL for the api.
+
+    :returns: list of dicts each belonging to a category
+
+    :raises steve.restapi.Http5xxException: if there's a server
+        error
+
+    Example:
+
+    >>> from steve.util import get_all_categories
+    >>> cats = get_all_categories('http://pyvideo.org/api/v1/')
+    >>> [cat['title'] for cat in cats]
+    [u'PyCon 2012', u'PyCon 2011', ...]
+    """
+
+    api = restapi.API(api_url)
+
+    # Build a dict of cat title -> cat data.
+    all_categories = restapi.get_content(api.category.get(limit=0))
+
+    return all_categories['objects']
+

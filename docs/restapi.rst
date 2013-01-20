@@ -22,8 +22,8 @@ need to see the doctor to cure you of your NIH syndrome."
    :local:
 
 
-Using the REST client API
-=========================
+Using the REST client API by itself
+===================================
 
 It's similar to slumber except a little less feature(bug)-full.
 The gist of it is this:
@@ -76,3 +76,16 @@ steve.restapi
    .. autoclass:: Http4xxException
 
    .. autoclass:: Http5xxException
+
+
+Using the utility functions for REST API automation (for Carl/Ryan)
+===================================================================
+
+.. Note::
+
+   Carl, Ryan: These functions are for you!
+
+.. automodule:: steve.util
+
+   .. autofunction:: get_all_categories(api_url)
+
