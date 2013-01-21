@@ -2,6 +2,25 @@
  ChangeLog
 ===========
 
+version 0.2 -- in development
+=============================
+
+**API Changes**
+
+* **changed steve.util.verify_json to steve.util.verify_video_data**
+
+  The previous function name was a misnomer---it takes a Python
+  dict as an argument and has nothing to do with JSON.
+
+
+**Other Changes**
+
+* **added steve.richardapi**
+
+  Added the richardapi module which has some functions that make
+  it easier to do richard API things
+
+
 version 0.1 -- January 13th, 2013
 =================================
 
