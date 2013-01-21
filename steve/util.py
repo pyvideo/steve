@@ -300,8 +300,8 @@ def _required(data):
     return True
 
 
-def verify_json(data, category=None):
-    """Verify the data in a single json file.
+def verify_video_data(data, category=None):
+    """Verify the data in a single json file for a video.
 
     :param data: The parsed contents of a JSON file. This should be a
         Python dict.
@@ -314,8 +314,8 @@ def verify_json(data, category=None):
         data file has to have a category.
 
     :returns: list of error strings.
-    """
 
+    """
     # TODO: rewrite this to return a dict of fieldname -> list of
     # errors
     errors = []
@@ -329,18 +329,17 @@ def verify_json(data, category=None):
             # Category is a special case since we can specify it
             # in the steve.ini file.
 
-            if category is None and key not in data:
+            if not category and key not in data:
                 errors.append(
                     '"category" must be in either steve.ini or data file')
-            elif key in data and data[key] != category:
+            elif (key in data and (
+                    category is not None and data[key] != category)):
                 errors.append(
                     '"%s" field does not match steve.ini category' % key)
 
-        elif _required(req) and key not in data:
-            errors.append('"%s" field is required' % key)
-
-        elif req['null'] and data.get(key) == None:
-            continue
+        elif key not in data:
+            if _required(req):
+                errors.append('"%s" field is required' % key)
 
         elif req['type'] == 'IntegerField':
             if not isinstance(data[key], int):
@@ -385,7 +384,7 @@ def verify_json_files(json_files, category=None):
     Prints the output
 
     :param json_files: list of (filename, parsed json data) tuples to
-        call verify_json on
+        call :py:func:`verify_video_data` on
 
     :param category: The category as specified in the steve.ini file.
 
@@ -400,7 +399,7 @@ def verify_json_files(json_files, category=None):
     filename_to_errors = {}
 
     for filename, data in json_files:
-        filename_to_errors[filename] = verify_json(data, category)
+        filename_to_errors[filename] = verify_video_data(data, category)
 
     return filename_to_errors
 

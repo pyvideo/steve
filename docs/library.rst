@@ -43,7 +43,7 @@ steve.util
 
    .. autofunction:: scrapevideo(video_url)
 
-   .. autofunction:: verify_json(data)
+   .. autofunction:: verify_video_data(data)
 
    .. autofunction:: verify_json_files(json_files)
 

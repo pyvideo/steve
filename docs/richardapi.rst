@@ -1,4 +1,4 @@
-.. _steve-restapi:
+.. _steve-richardapi:
 
 ==========================
  Using steve - richardapi
@@ -25,5 +25,9 @@ steve.richardapi
 
    .. autofunction:: get_all_categories(api_url)
 
-   .. autofunction:: create_category_if_not_exists(api_url, username, auth_key, category_data)
+   .. autofunction:: get_category(api_url, title)
+
+   .. autofunction:: create_category_if_missing(api_url, username, auth_key, category_data)
+
+   .. autofunction:: create_video(api_url, username, auth_key, video_data)
 
