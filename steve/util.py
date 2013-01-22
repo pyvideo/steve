@@ -338,7 +338,13 @@ def verify_video_data(data, category=None):
                     '"%s" field does not match steve.ini category' % key)
 
         elif key not in data:
-            if _required(req):
+            # Required data must be there.
+
+            # TODO: We add title here because this is the client side
+            # of the API and that's a special case that's differen
+            # than the data model which is where the video_reqs.json
+            # are derived. That should get fixed in richard.
+            if _required(req) or key == 'title':
                 errors.append('"%s" field is required' % key)
 
         elif req['type'] == 'IntegerField':
@@ -346,7 +352,7 @@ def verify_video_data(data, category=None):
                 errors.append('"%s" field must be an int' % key)
             elif req['choices'] and data[key] not in req['choices']:
                 errors.append('"%s" field must be one of %s' % (
-                        key, req.choices))
+                        key, req['choices']))
 
         elif req['type'] == 'TextField':
             if not req['empty_strings'] and not data[key]:
@@ -361,6 +367,10 @@ def verify_video_data(data, category=None):
                 if not mem:
                     errors.append('"%s" field has empty strings in it' % key)
                     break
+
+        elif req['type'] == 'BooleanField':
+            if data[key] not in (True, False):
+                errors.append('"%s" field has non-boolean value' % key)
 
     required_keys = [req['name'] for req in requirements]
 
