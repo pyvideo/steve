@@ -6,7 +6,6 @@
       1, 
       2
     ], 
-    "html": false, 
     "null": false, 
     "type": "IntegerField", 
     "empty_strings": false
@@ -15,7 +14,6 @@
     "has_default": false, 
     "name": "title", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "CharField", 
     "empty_strings": true
@@ -24,7 +22,6 @@
     "has_default": true, 
     "name": "summary", 
     "choices": [], 
-    "html": true, 
     "null": false, 
     "type": "TextField", 
     "empty_strings": true
@@ -33,7 +30,6 @@
     "has_default": true, 
     "name": "description", 
     "choices": [], 
-    "html": true, 
     "null": false, 
     "type": "TextField", 
     "empty_strings": true
@@ -42,7 +38,6 @@
     "has_default": false, 
     "name": "category", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "TextField", 
     "empty_strings": false
@@ -51,7 +46,6 @@
     "has_default": true, 
     "name": "quality_notes", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "TextField", 
     "empty_strings": true
@@ -60,7 +54,6 @@
     "has_default": false, 
     "name": "language", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "TextField", 
     "empty_strings": false
@@ -69,7 +62,6 @@
     "has_default": false, 
     "name": "copyright_text", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "TextField", 
     "empty_strings": true
@@ -78,7 +70,6 @@
     "has_default": false, 
     "name": "embed", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "TextField", 
     "empty_strings": true
@@ -87,7 +78,6 @@
     "has_default": false, 
     "name": "thumbnail_url", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "CharField", 
     "empty_strings": true
@@ -96,7 +86,6 @@
     "has_default": false, 
     "name": "video_ogv_length", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "IntegerField", 
     "empty_strings": false
@@ -105,7 +94,6 @@
     "has_default": false, 
     "name": "video_ogv_url", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "CharField", 
     "empty_strings": true
@@ -114,7 +102,6 @@
     "has_default": true, 
     "name": "video_ogv_download_only", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "BooleanField", 
     "empty_strings": false
@@ -123,7 +110,6 @@
     "has_default": false, 
     "name": "video_mp4_length", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "IntegerField", 
     "empty_strings": false
@@ -132,7 +118,6 @@
     "has_default": false, 
     "name": "video_mp4_url", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "CharField", 
     "empty_strings": true
@@ -141,7 +126,6 @@
     "has_default": true, 
     "name": "video_mp4_download_only", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "BooleanField", 
     "empty_strings": false
@@ -150,7 +134,6 @@
     "has_default": false, 
     "name": "video_webm_length", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "IntegerField", 
     "empty_strings": false
@@ -159,7 +142,6 @@
     "has_default": false, 
     "name": "video_webm_url", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "CharField", 
     "empty_strings": true
@@ -168,7 +150,6 @@
     "has_default": true, 
     "name": "video_webm_download_only", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "BooleanField", 
     "empty_strings": false
@@ -177,7 +158,6 @@
     "has_default": false, 
     "name": "video_flv_length", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "IntegerField", 
     "empty_strings": false
@@ -186,7 +166,6 @@
     "has_default": false, 
     "name": "video_flv_url", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "CharField", 
     "empty_strings": true
@@ -195,7 +174,6 @@
     "has_default": true, 
     "name": "video_flv_download_only", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "BooleanField", 
     "empty_strings": false
@@ -204,7 +182,6 @@
     "has_default": false, 
     "name": "source_url", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "CharField", 
     "empty_strings": true
@@ -213,7 +190,6 @@
     "has_default": true, 
     "name": "whiteboard", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "CharField", 
     "empty_strings": true
@@ -222,7 +198,6 @@
     "has_default": false, 
     "name": "recorded", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "DateField", 
     "empty_strings": false
@@ -231,7 +206,6 @@
     "has_default": false, 
     "name": "added", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "DateTimeField", 
     "empty_strings": false
@@ -240,7 +214,6 @@
     "has_default": false, 
     "name": "slug", 
     "choices": [], 
-    "html": false, 
     "null": false, 
     "type": "SlugField", 
     "empty_strings": true
@@ -249,7 +222,6 @@
     "has_default": false, 
     "name": "tags", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "TextArrayField", 
     "empty_strings": false
@@ -258,7 +230,6 @@
     "has_default": false, 
     "name": "speakers", 
     "choices": [], 
-    "html": false, 
     "null": true, 
     "type": "TextArrayField", 
     "empty_strings": false

@@ -73,21 +73,6 @@ class TestVerifyVideoData(TestCase):
         # Four errors if we pass in an empty dict
         eq_(len(verify_video_data({})), 4)
 
-    def test_summary(self):
-        """Tests summary which is a TextField that uses html"""
-        # Note: This is dependent on video_reqs.json data.
-
-        data = dict(self.default)
-
-        data['summary'] = ''
-        eq_(len(verify_video_data(data)), 0)
-
-        data['summary'] = 'Some summary'
-        eq_(len(verify_video_data(data)), 1)
-
-        data['summary'] = '<p>Some summary</p>'
-        eq_(len(verify_video_data(data)), 0)
-
     def test_speakers(self):
         """Tests speakers which is a TextArrayField"""
         # Note: This is dependent on video_reqs.json data.

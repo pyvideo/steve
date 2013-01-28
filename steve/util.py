@@ -359,8 +359,6 @@ def verify_video_data(data, category=None):
                 errors.append('"%s" field can\'t be an empty string' % key)
             elif not data[key]:
                 continue
-            elif req['html'] and not '<' in data[key]:
-                errors.append('"%s" field should be HTML formatted' % key)
 
         elif req['type'] == 'TextArrayField':
             for mem in data[key]:
