@@ -32,7 +32,8 @@ from steve.util import (
 from steve.webedit import serve
 
 
-BYLINE = ('steve-cmd: %s (%s). ' % (steve.__version__, steve.__releasedate__))
+BYLINE = ('steve-cmd: {0} ({1}).'.format(steve.__version__,
+                                         steve.__releasedate__))
 
 USAGE = 'Usage: steve [program-options] COMMAND [command-options] ARGS'
 
@@ -78,13 +79,13 @@ def createproject_cmd(parser, parsed, args):
 
     path = os.path.abspath(parsed.directory)
     if os.path.exists(path):
-        err('%s exists. Remove it and try again or try again with '
-            'a different filename.' % path)
+        err('{0} exists. Remove it and try again or try again with '
+            'a different filename.'.format(path))
         return 1
 
     # TODO: this kicks up errors. catch the errors and tell the user
     # something more useful
-    out('Creating directory %s...' % path)
+    out('Creating directory {0}...'.format(path))
     os.makedirs(path)
 
     out('Creating steve.ini...')
@@ -92,7 +93,7 @@ def createproject_cmd(parser, parsed, args):
     f.write(CONFIG)
     f.close()
 
-    out('%s created.' % path)
+    out('{0} created.'.format(path))
     out('')
 
     out('Now cd into the directory and edit the steve.ini file.')
@@ -131,11 +132,11 @@ def fetch_cmd(cfg, parser, parsed, args):
     else:
         youtube_embed = None
 
-    out('Scraping %s...' % url)
+    out('Scraping {0}...'.format(url))
     video_feed = vidscraper.auto_feed(url)
     video_feed.load()
 
-    print 'Found %d videos...' % video_feed.video_count
+    print 'Found {0} videos...'.format(video_feed.video_count)
     for i, video in enumerate(video_feed):
         if video.title:
             filename = video.title.replace(' ', '_')
@@ -144,9 +145,9 @@ def fetch_cmd(cfg, parser, parsed, args):
         else:
             filename = ''
 
-        filename = '%04d%s.json' % (i, filename[:40])
+        filename = '{0:04d}{1}.json'.format(i, filename[:40])
 
-        print 'Working on %s... (%s)' % (video.title, filename)
+        print 'Working on {0}... ({1})'.format(video.title, filename)
         item = vidscraper_to_dict(video, youtube_embed=youtube_embed)
 
         f = open(os.path.join('json', filename), 'w')
@@ -193,18 +194,18 @@ def status_cmd(cfg, parser, parsed, args):
     else:
         if in_progress_files:
             for fn, whiteboard in in_progress_files:
-                out(u'%s: %s' % (fn, term.bold(whiteboard)),
+                out(u'{0}: {1}'.format(fn, term.bold(whiteboard)),
                     wrap=False)
 
         if done_files:
             out('')
             for fn in done_files:
-                out('%s: %s' % (fn, term.bold(term.green('Done!'))),
+                out('{0}: {1}'.format(fn, term.bold(term.green('Done!'))),
                     wrap=False)
 
         out('')
-        out('In progress: %3d' % len(in_progress_files))
-        out('Done:        %3d' % len(done_files))
+        out('In progress: {0:3d}'.format(len(in_progress_files)))
+        out('Done:        {0:3d}'.format(len(done_files)))
 
     return 0
 
@@ -226,7 +227,7 @@ def verify_cmd(cfg, parser, parsed, args):
         if errors:
             out(filename)
             for error in errors:
-                out('  - ' + error)
+                out('  - {0}'.format(error))
 
     out('Done!')
     return 0
@@ -296,8 +297,8 @@ def push_cmd(cfg, parser, parsed, args):
         category = cfg.get('project', 'category')
         category = category.strip()
         if category not in all_categories:
-            err('Category "%s" does not exist on server. Build it there '
-                'first.' % category)
+            err('Category "{0}" does not exist on server. Build it there '
+                'first.'.format(category))
             return 1
 
     except ConfigParser.NoOptionError:
@@ -308,30 +309,30 @@ def push_cmd(cfg, parser, parsed, args):
         if category is None:
             this_cat = contents.get('category')
             if not this_cat:
-                err('No category set in configuration and %s has no '
-                    'category set.' % fn)
+                err('No category set in configuration and {0} has no '
+                    'category set.'.format(fn))
                 errors = True
             elif this_cat != this_cat.strip():
-                err('Category "%s" has whitespace at beginning or '
-                    'end.' % this_cat)
+                err('Category "{0}" has whitespace at beginning or '
+                    'end.'.format(this_cat))
                 return 1
             elif this_cat not in all_categories:
-                err('Category "%s" does not exist on server. '
-                    'Build it there first.' % this_cat)
+                err('Category "{0}" does not exist on server. '
+                    'Build it there first.'.format(this_cat))
                 return 1
 
         else:
             this_cat = contents.get('category')
             if this_cat is not None and str(this_cat).strip() != category:
-                err('Category set in configuration (%s), but %s has '
-                    'different category (%s).' % (
+                err('Category set in configuration ({0}), but {1} has '
+                    'different category ({2}).'.format(
                     category, fn, this_cat))
                 errors = True
 
     if update:
         for fn, contents in data:
             if not 'id' in contents:
-                err('id not in contents for "%s".' % fn)
+                err('id not in contents for "{0}".'.format(fn))
                 errors = True
                 break
 
@@ -341,10 +342,10 @@ def push_cmd(cfg, parser, parsed, args):
 
     # Everything looks ok. So double-check with the user and push.
 
-    out('Pushing to: %s' % api_url)
-    out('Username:   %s' % username)
-    out('api_key:    %s' % api_key)
-    out('update?:    %s' % update)
+    out('Pushing to: {0}'.format(api_url))
+    out('Username:   {0}'.format(username))
+    out('api_key:    {0}'.format(api_key))
+    out('update?:    {0}'.format(update))
     out('Once you push, you can not undo it. Push for realz? Y/N')
     if not raw_input().strip().lower().startswith('y'):
         err('Aborting.')
@@ -358,30 +359,30 @@ def push_cmd(cfg, parser, parsed, args):
             if 'id' in contents:
                 del contents['id']
 
-            out('Pushing %s' % fn)
+            out('Pushing {0}'.format(fn))
             try:
                 vid = steve.restapi.get_content(
                     api.video.post(contents, username=username,
                                    api_key=api_key))
                 if 'id' in vid:
                     contents['id'] = vid['id']
-                    out('   Now has id %s' % vid['id'])
+                    out('   Now has id {0}'.format(vid['id']))
                 else:
-                    err('   Errors?: %s' % vid)
+                    err('   Errors?: {0}'.format(vid))
             except steve.restapi.RestAPIException as exc:
-                err('   Error?: %s' % exc)
-                err('   "%s"' % exc.response.content)
+                err('   Error?: {0}'.format(exc))
+                err('   "{0}"'.format(exc.response.content))
 
         else:
-            out('Updating %s "%s" (%s)' % (
+            out('Updating {0} "{1}" ({2})'.format(
                 contents['id'], contents['title'], fn))
             try:
                 vid = steve.restapi.get_content(
                     api.video(contents['id']).put(
                         contents, username=username, api_key=api_key))
             except steve.restapi.RestAPIException as exc:
-                err('   Error?: %s' % exc)
-                err('   "%s"' % exc.response.content)
+                err('   Error?: {0}'.format(exc))
+                err('   "{0}"'.format(exc.response.content))
 
         save_json_file(cfg, fn, contents)
 
@@ -427,7 +428,7 @@ def pull_cmd(cfg, parser, parsed, args):
            if cat_item['title'] == cat_title]
 
     if not cat:
-        err('Category "%s" does not exist.' % cat_title)
+        err('Category "{0}" does not exist.'.format(cat_title))
         return 1
 
     # Get the category from the list of 1.
@@ -445,7 +446,7 @@ def pull_cmd(cfg, parser, parsed, args):
             api.video(video_id).get(username=username,
                                     api_key=api_key))
 
-        out('Working on "%s"' % video_data['slug'])
+        out('Working on "{0}"'.format(video_data['slug']))
 
         # Nix some tastypie bits from the data.
         for bad_key in ('resource_uri',):
@@ -455,7 +456,7 @@ def pull_cmd(cfg, parser, parsed, args):
         # Add id.
         video_data['id'] = video_id
 
-        fn = 'json/%04d_%s.json' % (counter, video_data['slug'])
+        fn = 'json/{0:4d}_{1}.json'.format(counter, video_data['slug'])
         data.append((fn, video_data))
 
     out('Saving files....')

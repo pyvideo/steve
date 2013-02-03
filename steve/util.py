@@ -21,16 +21,16 @@ import vidscraper
 YOUTUBE_EMBED = {
     'object': (
         '<object width="640" height="390"><param name="movie" '
-        'value="http://youtube.com/v/%(guid)s?version=3&amp;hl=en_US"></param>'
+        'value="http://youtube.com/v/{guid}?version=3&amp;hl=en_US"></param>'
         '<param name="allowFullScreen" value="true"></param>'
         '<param name="allowscriptaccess" value="always"></param>'
-        '<embed src="http://youtube.com/v/%(guid)s?version=3&amp;hl=en_US" '
+        '<embed src="http://youtube.com/v/{guid}?version=3&amp;hl=en_US" '
         'type="application/x-shockwave-flash" width="640" '
         'height="390" allowscriptaccess="always" '
         'allowfullscreen="true"></embed></object>'),
     'iframe': (
         '<iframe id="player" width="640" height="390" frameborder="0" '
-        'src="http://youtube.com/v/%(guid)s"></iframe>')
+        'src="http://youtube.com/v/{guid}"></iframe>')
     }
 
 
@@ -79,7 +79,7 @@ def with_config(fun):
 
     >>> @with_config
     ... def config_printer(cfg):
-    ...     print 'Config!: %r' % cfg
+    ...     print 'Config!: {0!r}'.format(cfg)
     ...
     >>> config_printer()  # if it found a config
     Config! ...
@@ -153,14 +153,15 @@ def get_project_config():
 
 
 def get_from_config(cfg, key, section='project',
-                    error='"%(key)s" must be defined in steve.ini file.'):
+                    error='"{key}" must be defined in steve.ini file.'):
     """Retrieves specified key from config or errors
 
     :arg cfg: the configuration
     :arg key: key to retrieve
     :arg section: the section to retrieve the key from
     :arg error: the error to print to stderr if the key is not
-        there or if the value is empty
+        there or if the value is empty. ``{key}`` gets filled in
+        with the key
 
     """
     try:
@@ -170,7 +171,7 @@ def get_from_config(cfg, key, section='project',
     except ConfigParser.NoOptionError:
         pass
 
-    err(error % {'key': key})
+    err(error.format(key=key))
     return None
 
 
@@ -269,7 +270,8 @@ def vidscraper_to_dict(video, youtube_embed=None):
                 item['video_flv_url'] = f.url
                 item['video_flv_download_only'] = False
             else:
-                raise ValueError('No clue what to do with %s' % f.mime_type)
+                raise ValueError(
+                    'No clue what to do with {0}'.format(f.mime_type))
 
     item['embed'] = video.embed_code
 
@@ -279,7 +281,7 @@ def vidscraper_to_dict(video, youtube_embed=None):
         guid = video.guid
         if guid:
             guid = video.guid.split('/')[-1]
-            item['embed'] = youtube_embed % {'guid': guid}
+            item['embed'] = youtube_embed.format(guid=guid)
 
     return item
 
@@ -335,7 +337,8 @@ def verify_video_data(data, category=None):
             elif (key in data and (
                     category is not None and data[key] != category)):
                 errors.append(
-                    '"%s" field does not match steve.ini category' % key)
+                    '"{0}" field does not match steve.ini category'.format(
+                        key))
 
         elif key not in data:
             # Required data must be there.
@@ -345,30 +348,32 @@ def verify_video_data(data, category=None):
             # than the data model which is where the video_reqs.json
             # are derived. That should get fixed in richard.
             if _required(req) or key == 'title':
-                errors.append('"%s" field is required' % key)
+                errors.append('"{0}" field is required'.format(key))
 
         elif req['type'] == 'IntegerField':
             if not isinstance(data[key], int):
-                errors.append('"%s" field must be an int' % key)
+                errors.append('"{0}" field must be an int'.format(key))
             elif req['choices'] and data[key] not in req['choices']:
-                errors.append('"%s" field must be one of %s' % (
+                errors.append('"{0}" field must be one of {1}'.format(
                         key, req['choices']))
 
         elif req['type'] == 'TextField':
             if not req['empty_strings'] and not data[key]:
-                errors.append('"%s" field can\'t be an empty string' % key)
+                errors.append(
+                    '"{0}" field can\'t be an empty string'.format(key))
             elif not data[key]:
                 continue
 
         elif req['type'] == 'TextArrayField':
             for mem in data[key]:
                 if not mem:
-                    errors.append('"%s" field has empty strings in it' % key)
+                    errors.append(
+                        '"{0}" field has empty strings in it'.format(key))
                     break
 
         elif req['type'] == 'BooleanField':
             if data[key] not in (True, False):
-                errors.append('"%s" field has non-boolean value' % key)
+                errors.append('"{0}" field has non-boolean value'.format(key))
 
     required_keys = [req['name'] for req in requirements]
 
@@ -381,7 +386,7 @@ def verify_video_data(data, category=None):
             continue
 
         if key not in required_keys:
-            errors.append('"%s" field shouldn\'t be there.' % key)
+            errors.append('"{0}" field shouldn\'t be there.'.format(key))
 
     return errors
 
@@ -488,7 +493,7 @@ def load_json_files(config):
             data.append((fn, json.load(fp)))
             fp.close()
         except Exception, e:
-            err('Problem with %s' % fn, wrap=False)
+            err('Problem with {0}'.format(fn), wrap=False)
             raise e
 
     return data
@@ -574,9 +579,7 @@ def scrapevideo(video_url):
     data['url'] = video_url
     if 'youtube.com' in video_url and 'guid' in data and data['guid']:
         guid = data['guid'].split('/')[-1]
-        data['object_embed_code'] = (YOUTUBE_EMBED['object'] %
-                                     {'guid': guid})
-        data['iframe_embed_code'] = (YOUTUBE_EMBED['iframe'] %
-                                     {'guid': guid})
+        data['object_embed_code'] = YOUTUBE_EMBED['object'].format(guid=guid)
+        data['iframe_embed_code'] = YOUTUBE_EMBED['iframe'].format(guid=guid)
 
     return data

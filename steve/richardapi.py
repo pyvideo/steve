@@ -84,7 +84,7 @@ def get_category(api_url, title):
     if cats_by_title:
         return cats_by_title[0]
 
-    raise DoesNotExist('category "%s" does not exist' % title)
+    raise DoesNotExist('category "{0}" does not exist'.format(title))
 
 
 def create_category_if_missing(api_url, username, auth_key, category_data):

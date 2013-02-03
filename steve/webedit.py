@@ -132,7 +132,7 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
                         })
 
         self.render_response(200, 'edit.html', {
-                'title': 'edit %s' % data['title'],
+                'title': 'edit {0}'.format(data['title']),
                 'fn': fn,
                 'fields': fields,
                 'prev_fn': prev_fn,
@@ -182,11 +182,11 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
 
         save_json_file(cfg, fn, data)
 
-        return self.redirect('/edit/%s' % fn[5:])
+        return self.redirect('/edit/{0}'.format(fn[5:]))
 
 
 def serve():
     httpd = HTTPServer((HOST, PORT), WebEditRequestHandler)
-    out('Web edit system running on http://%s:%s/' % (HOST, PORT))
+    out('Web edit system running on http://{0}:{1}/'.format(HOST, PORT))
     out('ctrl-c to exit.')
     httpd.serve_forever()

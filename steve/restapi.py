@@ -112,7 +112,7 @@ def get_content(resp):
         # exception but doesn't specify which one. Need to toss some
         # bad "json" at it and see what it does so we can make this
         # except suck less.
-        print 'Error: get_content threw %s' % exc
+        print 'Error: get_content threw {0}'.format(exc)
         return resp.text
 
 
@@ -157,11 +157,11 @@ class Resource(object):
 
         if 400 <= resp.status_code <= 499:
             raise Http4xxException(
-                'HTTP %s: %s %s' % (resp.status_code, method, url),
+                'HTTP {0}: {1} {2}'.format(resp.status_code, method, url),
                 response=resp)
         elif 500 <= resp.status_code <= 599:
             raise Http5xxException(
-                'HTTP %s: %s %s' % (resp.status_code, method, url),
+                'HTTP {0}: {1} {2}'.format(resp.status_code, method, url),
                 response=resp)
 
         return resp
@@ -170,8 +170,9 @@ class Resource(object):
         resp = self._request('GET', params=kwargs)
         if 200 <= resp.status_code <= 299:
             return resp
-        raise RestAPIException('Unknown response: %s' % resp.status_code,
-                               response=resp)
+        raise RestAPIException(
+            'Unknown response: {0}'.format(resp.status_code),
+            response=resp)
 
     def post(self, data, **kwargs):
         jsondata = json.dumps(data)
@@ -185,8 +186,9 @@ class Resource(object):
         elif 200 <= resp.status_code <= 299:
             return resp
 
-        raise RestAPIException('Unknown response: %s' % resp.status_code,
-                               response=resp)
+        raise RestAPIException(
+            'Unknown response: {0}'.format(resp.status_code),
+            response=resp)
 
     def put(self, data, **kwargs):
         jsondata = json.dumps(data)
@@ -200,15 +202,17 @@ class Resource(object):
         elif 200 <= resp.status_code <= 299:
             return resp
 
-        raise RestAPIException('Unknown response: %s' % resp.status_code,
-                               response=resp)
+        raise RestAPIException(
+            'Unknown response: {0}'.format(resp.status_code),
+            response=resp)
 
     def delete(self, **kwargs):
         resp = self._request('DELETE', params=kwargs)
         if 200 <= resp.status_code <= 299:
             return resp
-        raise RestAPIException('Unknown response: %s' % resp.status_code,
-                               response=resp)
+        raise RestAPIException(
+            'Unknown response: {0}'.format(resp.status_code),
+            response=resp)
 
 
 class API(object):
