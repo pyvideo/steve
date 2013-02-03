@@ -45,7 +45,7 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
 
     def parse_form(self):
         form = cgi.FieldStorage(
-            fp=self.rfile, 
+            fp=self.rfile,
             headers=self.headers,
             environ={'REQUEST_METHOD': 'POST',
                      'CONTENT_TYPE': self.headers['Content-Type'],
@@ -108,7 +108,8 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
         all_files = [filename for filename, _ in load_json_files(cfg)]
         fn_index = all_files.index(fn)
         prev_fn = all_files[fn_index - 1] if fn_index > 0 else ''
-        next_fn = all_files[fn_index + 1] if fn_index < len(all_files) - 1 else ''
+        next_fn = (all_files[fn_index + 1] if fn_index < len(all_files) - 1
+                   else '')
 
         fields = []
 

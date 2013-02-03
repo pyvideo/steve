@@ -120,7 +120,7 @@ def create_category_if_missing(api_url, username, auth_key, category_data):
             'carl',
             'ou812authkey',
             {'title': 'Test Category 2013'})
-       
+
         print cat
         # Prints something like:
         # {u'description': u'', u'videos': [],
@@ -200,7 +200,7 @@ def create_video(api_url, username, auth_key, video_data):
                     'language': 'English',
                     'added': datetime.datetime.now().isoformat()
                 })
-       
+
             # Prints the video data.
             print video
 
@@ -230,4 +230,3 @@ def create_video(api_url, username, auth_key, video_data):
     return restapi.get_content(api.video.post(video_data,
                                               username=username,
                                               api_key=auth_key))
-

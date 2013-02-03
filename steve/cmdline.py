@@ -79,7 +79,7 @@ def createproject_cmd(parser, parsed, args):
     path = os.path.abspath(parsed.directory)
     if os.path.exists(path):
         err('%s exists. Remove it and try again or try again with '
-                  'a different filename.' % path)
+            'a different filename.' % path)
         return 1
 
     # TODO: this kicks up errors. catch the errors and tell the user
@@ -97,7 +97,7 @@ def createproject_cmd(parser, parsed, args):
 
     out('Now cd into the directory and edit the steve.ini file.')
     out('After you do that, you should put your project into version '
-              'control. Srsly.')
+        'control. Srsly.')
     return 0
 
 
@@ -297,7 +297,7 @@ def push_cmd(cfg, parser, parsed, args):
         category = category.strip()
         if category not in all_categories:
             err('Category "%s" does not exist on server. Build it there '
-                      'first.' % category)
+                'first.' % category)
             return 1
 
     except ConfigParser.NoOptionError:
@@ -309,23 +309,23 @@ def push_cmd(cfg, parser, parsed, args):
             this_cat = contents.get('category')
             if not this_cat:
                 err('No category set in configuration and %s has no '
-                          'category set.' % fn)
+                    'category set.' % fn)
                 errors = True
             elif this_cat != this_cat.strip():
                 err('Category "%s" has whitespace at beginning or '
-                          'end.' % this_cat)
+                    'end.' % this_cat)
                 return 1
             elif this_cat not in all_categories:
                 err('Category "%s" does not exist on server. '
-                          'Build it there first.' % this_cat)
+                    'Build it there first.' % this_cat)
                 return 1
 
         else:
             this_cat = contents.get('category')
             if this_cat is not None and str(this_cat).strip() != category:
                 err('Category set in configuration (%s), but %s has '
-                          'different category (%s).' % (
-                        category, fn, this_cat))
+                    'different category (%s).' % (
+                    category, fn, this_cat))
                 errors = True
 
     if update:
@@ -374,7 +374,7 @@ def push_cmd(cfg, parser, parsed, args):
 
         else:
             out('Updating %s "%s" (%s)' % (
-                    contents['id'], contents['title'], fn))
+                contents['id'], contents['title'], fn))
             try:
                 vid = steve.restapi.get_content(
                     api.video(contents['id']).put(

@@ -274,7 +274,7 @@ def vidscraper_to_dict(video, youtube_embed=None):
     item['embed'] = video.embed_code
 
     if (youtube_embed is not None and 'youtube.com' in video.link
-        and hasattr(video, 'guid')):
+            and hasattr(video, 'guid')):
 
         guid = video.guid
         if guid:
@@ -294,8 +294,8 @@ def get_video_requirements():
 
 def _required(data):
     if (data['null']
-        or data['has_default']
-        or data['empty_strings']):
+            or data['has_default']
+            or data['empty_strings']):
         return False
     return True
 
@@ -431,7 +431,7 @@ def err(*output, **kw):
 
     """
     output = 'Error: ' + ' '.join([str(o) for o in output])
-    if kw.get('wrap') != False:
+    if kw.get('wrap') is not False:
         output = '\n'.join(wrap(output, kw.get('indent', '')))
     elif kw.get('indent'):
         indent = kw['indent']
@@ -453,7 +453,7 @@ def out(*output, **kw):
 
     """
     output = ' '.join([stringify(o) for o in output])
-    if kw.get('wrap') != False:
+    if kw.get('wrap') is not False:
         output = '\n'.join(wrap(output, kw.get('indent', '')))
     elif kw.get('indent'):
         indent = kw['indent']
