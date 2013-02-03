@@ -2,6 +2,7 @@
   {
     "has_default": true, 
     "name": "state", 
+    "md": false, 
     "choices": [
       1, 
       2
@@ -13,6 +14,7 @@
   {
     "has_default": false, 
     "name": "title", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "CharField", 
@@ -21,6 +23,7 @@
   {
     "has_default": true, 
     "name": "summary", 
+    "md": true, 
     "choices": [], 
     "null": false, 
     "type": "TextField", 
@@ -29,6 +32,7 @@
   {
     "has_default": true, 
     "name": "description", 
+    "md": true, 
     "choices": [], 
     "null": false, 
     "type": "TextField", 
@@ -37,6 +41,7 @@
   {
     "has_default": false, 
     "name": "category", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "TextField", 
@@ -45,6 +50,7 @@
   {
     "has_default": true, 
     "name": "quality_notes", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "TextField", 
@@ -53,6 +59,7 @@
   {
     "has_default": false, 
     "name": "language", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "TextField", 
@@ -61,6 +68,7 @@
   {
     "has_default": false, 
     "name": "copyright_text", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "TextField", 
@@ -69,6 +77,7 @@
   {
     "has_default": false, 
     "name": "embed", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "TextField", 
@@ -77,6 +86,7 @@
   {
     "has_default": false, 
     "name": "thumbnail_url", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "CharField", 
@@ -85,6 +95,7 @@
   {
     "has_default": false, 
     "name": "video_ogv_length", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "IntegerField", 
@@ -93,6 +104,7 @@
   {
     "has_default": false, 
     "name": "video_ogv_url", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "CharField", 
@@ -101,6 +113,7 @@
   {
     "has_default": true, 
     "name": "video_ogv_download_only", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "BooleanField", 
@@ -109,6 +122,7 @@
   {
     "has_default": false, 
     "name": "video_mp4_length", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "IntegerField", 
@@ -117,6 +131,7 @@
   {
     "has_default": false, 
     "name": "video_mp4_url", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "CharField", 
@@ -125,6 +140,7 @@
   {
     "has_default": true, 
     "name": "video_mp4_download_only", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "BooleanField", 
@@ -133,6 +149,7 @@
   {
     "has_default": false, 
     "name": "video_webm_length", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "IntegerField", 
@@ -141,6 +158,7 @@
   {
     "has_default": false, 
     "name": "video_webm_url", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "CharField", 
@@ -149,6 +167,7 @@
   {
     "has_default": true, 
     "name": "video_webm_download_only", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "BooleanField", 
@@ -157,6 +176,7 @@
   {
     "has_default": false, 
     "name": "video_flv_length", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "IntegerField", 
@@ -165,6 +185,7 @@
   {
     "has_default": false, 
     "name": "video_flv_url", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "CharField", 
@@ -173,6 +194,7 @@
   {
     "has_default": true, 
     "name": "video_flv_download_only", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "BooleanField", 
@@ -181,6 +203,7 @@
   {
     "has_default": false, 
     "name": "source_url", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "CharField", 
@@ -189,6 +212,7 @@
   {
     "has_default": true, 
     "name": "whiteboard", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "CharField", 
@@ -197,6 +221,7 @@
   {
     "has_default": false, 
     "name": "recorded", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "DateField", 
@@ -205,6 +230,7 @@
   {
     "has_default": false, 
     "name": "added", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "DateTimeField", 
@@ -213,6 +239,7 @@
   {
     "has_default": false, 
     "name": "slug", 
+    "md": false, 
     "choices": [], 
     "null": false, 
     "type": "SlugField", 
@@ -221,6 +248,7 @@
   {
     "has_default": false, 
     "name": "tags", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "TextArrayField", 
@@ -229,6 +257,7 @@
   {
     "has_default": false, 
     "name": "speakers", 
+    "md": false, 
     "choices": [], 
     "null": true, 
     "type": "TextArrayField", 

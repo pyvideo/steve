@@ -127,7 +127,7 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
                         'name': req['name'],
                         'type': req['type'],
                         'choices': req['choices'],
-                        'html': req['html'],
+                        'md': req['md'],
                         'value': data.get(key, '')
                         })
 

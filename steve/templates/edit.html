@@ -97,7 +97,7 @@ textarea {
           <div class="helptext">Slug</div>
         {% elif field.type == 'TextField' %}
           <div><textarea name="{{ field.name }}">{{ field.value }}</textarea></div>
-          <div class="helptext">Text{{ ': HTML formatted' if field.html }}</div>
+          <div class="helptext">Text{{ ': Markdown formatted' if field.md }}</div>
         {% elif field.type == 'BooleanField' %}
           <input type="radio" name="{{ field.name }}" value="0"{{ ' checked' if not field.value }}>False
           <input type="radio" name="{{ field.name }}" value="1"{{ ' checked' if field.value }}>True
