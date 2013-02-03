@@ -24,11 +24,12 @@ except ImportError:
     sys.exit(1)
 
 import steve.restapi
+import steve.richardapi
 from steve.util import (
     YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
     out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
-    get_all_categories, load_json_files, save_json_file, save_json_files,
-    get_from_config, verify_json_files)
+    load_json_files, save_json_file, save_json_files, get_from_config,
+verify_json_files)
 from steve.webedit import serve
 
 
@@ -291,7 +292,7 @@ def push_cmd(cfg, parser, parsed, args):
     api = steve.restapi.API(api_url)
 
     all_categories = dict([(cat['title'], cat)
-                           for cat in get_all_categories(api_url)])
+                           for cat in richardapi.get_all_categories(api_url)])
 
     try:
         category = cfg.get('project', 'category')
