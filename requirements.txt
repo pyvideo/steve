@@ -5,6 +5,7 @@ beautifulsoup4
 blessings
 cssselect
 feedparser
+html2text
 httplib2
 lxml
 nose

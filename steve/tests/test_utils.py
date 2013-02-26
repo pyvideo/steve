@@ -11,7 +11,7 @@ from unittest import TestCase
 
 from nose.tools import eq_
 
-from steve.util import verify_video_data
+from steve.util import verify_video_data, html_to_markdown
 
 
 class TestVerifyVideoData(TestCase):
@@ -120,3 +120,9 @@ class TestVerifyVideoData(TestCase):
 
         data['video_ogv_download_only'] = 'True'
         eq_(len(verify_video_data(data)), 1)
+
+
+def test_html_to_markdown():
+    """Test html_to_markdown"""
+    eq_(html_to_markdown('<p>this is <b>html</b>!</p>'),
+        u'this is **html**!')

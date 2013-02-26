@@ -15,6 +15,7 @@ import sys
 import textwrap
 from functools import wraps
 
+import html2text
 import vidscraper
 
 
@@ -583,3 +584,19 @@ def scrapevideo(video_url):
         data['iframe_embed_code'] = YOUTUBE_EMBED['iframe'].format(guid=guid)
 
     return data
+
+
+def html_to_markdown(text):
+    """Converts an HTML string to equivalent Markdown
+
+    :arg text: the HTML string to convert
+
+    :returns: Markdown string
+
+    Example:
+
+    >>> html_to_markdown('<p>this is <b>html</b>!</p>')
+    u'this is **html**!'
+
+    """
+    return html2text.html2text(text).strip()

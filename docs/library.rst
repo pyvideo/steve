@@ -35,6 +35,8 @@ steve.util
 
    .. autofunction:: get_project_config()
 
+   .. autofunction:: html_to_markdown(text)
+
    .. autofunction:: load_json_files(config)
 
    .. autofunction:: save_json_files(config, data, **kw)
@@ -120,5 +122,29 @@ field.
 
         # Put the rest of the summary back.
         contents['summary'] = '\n'.join(summary)
+
+    steve.util.save_json_files(cfg, data)
+
+
+Convert summary and description to Markdown
+-------------------------------------------
+
+This converts summary and description to Markdown.
+
+::
+
+    import steve.util
+
+    cfg = steve.util.get_project_config()
+    data = steve.util.load_json_files(cfg)
+
+    for fn, contents in data:
+        print fn
+
+        contents['summary'] = steve.util.html_to_markdown(
+            contents.get('summary', ''))
+
+        contents['description'] = steve.util.html_to_markdown(
+            contents.get('description', ''))
 
     steve.util.save_json_files(cfg, data)
