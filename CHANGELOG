@@ -20,6 +20,11 @@ version 0.2 -- in development
   Added the richardapi module which has some functions that make
   it easier to do richard API things
 
+* **added steve.util.html_to_markdown**
+
+  Since richard and pyvideo now use Markdown for summaries and
+  descriptions, it helps to have a converter.
+
 
 version 0.1 -- January 13th, 2013
 =================================
