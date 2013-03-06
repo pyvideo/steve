@@ -254,8 +254,7 @@ def update_video(api_url, username, auth_key, video_id, video_data):
     :arg username: username
     :arg auth_key: auth key for that username for that API URL
     :arg video_id: The id for the video
-    :arg video_data: Python dict holding the values to create
-        this video
+    :arg video_data: Python dict holding all the data for this video
 
     :returns: the updated video data
 
@@ -272,7 +271,7 @@ def update_video(api_url, username, auth_key, video_id, video_data):
 
         import datetime
 
-        from steve.util import create_video, MissingRequiredData
+        from steve.util import update_video, MissingRequiredData
 
         try:
             video = update_video(
