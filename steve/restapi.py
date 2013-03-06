@@ -36,7 +36,7 @@ class Http4xxException(RestAPIException):
 
         try:
             # do something here
-        except Http5xxException as exc:
+        except Http4xxException as exc:
             # oh noes! i did something wrogn!
 
             # This tells you the actual HTTP status code
