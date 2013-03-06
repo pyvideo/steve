@@ -31,3 +31,5 @@ steve.richardapi
 
    .. autofunction:: create_video(api_url, username, auth_key, video_data)
 
+   .. autofunction:: update_video(api_url, username, auth_key, video_id, video_data)
+

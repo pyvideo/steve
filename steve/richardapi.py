@@ -227,6 +227,104 @@ def create_video(api_url, username, auth_key, video_data):
     # want to use (category, title) as a key.
 
     api = restapi.API(api_url)
-    return restapi.get_content(api.video.post(video_data,
-                                              username=username,
-                                              api_key=auth_key))
+    return restapi.get_content(
+        api.video.post(data=video_data,
+                       username=username,
+                       api_key=auth_key))
+
+
+def update_video(api_url, username, auth_key, video_id, video_data):
+    """Updates an existing video on the site
+
+    This updates an existing video on the site using HTTP PUT. It
+    returns the final video data.
+
+
+    .. Warning::
+
+       This stomps on the data that's currently there. If you have the
+       video_id wrong, then this will overwrite the current data.
+
+       Be very careful about updating existing video data. Best to get
+       it, make sure the id is correct (check the title? the slug?),
+       and then update it.
+
+
+    :arg api_url: URL for the api
+    :arg username: username
+    :arg auth_key: auth key for that username for that API URL
+    :arg video_id: The id for the video
+    :arg video_data: Python dict holding the values to create
+        this video
+
+    :returns: the updated video data
+
+    :raises steve.restapi.Http4xxException: if the video doesn't
+        exist on the server
+    :raises steve.restapi.Http5xxException: if there's a server
+        error
+    :raises steve.richardapi.MissingRequiredData: if the video_data
+        is missing keys that are required---check the ``errors``
+        property of the exception for a list of errors
+
+
+    Example::
+
+        import datetime
+
+        from steve.util import create_video, MissingRequiredData
+
+        try:
+            video = update_video(
+                'http://pyvideo.org/api/v1/',
+                'carl',
+                'ou812authkey',
+                1101,
+                {
+                    'id': 1101,
+                    'category': 'Test Category',
+                    'state': 1,
+                    'title': 'Test video title',
+                    'speakers': ['Jimmy Discotheque'],
+                    'language': 'English',
+                    'added': datetime.datetime.now().isoformat()
+                })
+
+            # Prints the video data.
+            print video
+
+        except MissingRequiredData as exc:
+            # Prints the errors
+            print exc.errors
+
+
+    .. Note::
+
+       Check the richard project in the video app at ``models.py`` for
+       up-to-date list of fields and their types.
+
+       https://github.com/willkg/richard/blob/master/richard/videos/models.py
+
+    """
+    # If you do a create_video, then update that data and do an
+    # update_video, the data has 'resource_uri' in it. We want to nix
+    # that if it's there.
+    video_data.pop('resource_uri', None)
+
+    errors = verify_video_data(video_data)
+
+    if errors:
+        raise MissingRequiredData(
+            'video data has errors', errors=errors)
+
+    api = restapi.API(api_url)
+
+    # Try to get the video on the site. This will kick up a 404
+    # if it doesn't exist.
+    api.video(video_id).get()
+
+    # Everything is probably fine, so try to update the data.
+    return restapi.get_content(
+        api.video(video_id).put(data=video_data,
+                                username=username,
+                                api_key=auth_key))

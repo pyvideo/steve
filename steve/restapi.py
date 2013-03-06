@@ -126,12 +126,14 @@ class Resource(object):
     def __init__(self, **kwargs):
         self._kwargs = kwargs
         url = kwargs['url']
-        if not url.endswith('/'):
-            url = url + '/'
 
         id_ = kwargs.get('id')
         if id_:
             url = urljoin(url, id_)
+
+        # Make all urls end in /.
+        if not url.endswith('/'):
+            url = url + '/'
 
         self._kwargs['url'] = url
         self.session = requests.session()
@@ -200,6 +202,10 @@ class Resource(object):
             return self._request('GET', params=kwargs, url=location)
 
         elif 200 <= resp.status_code <= 299:
+            # If the server didn't return the data or a redirect, we
+            # go fetch it.
+            if not resp.json:
+                resp = self._request('GET', params=kwargs)
             return resp
 
         raise RestAPIException(
