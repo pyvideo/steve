@@ -3,3 +3,4 @@ include LICENSE
 include AUTHORS
 include CHANGELOG
 include setup.py
+recursive-include steve *
