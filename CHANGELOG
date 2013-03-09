@@ -15,6 +15,10 @@ version 0.2 -- in development
 
 **Other Changes**
 
+* **added steve.restapi**
+
+  Basic REST client to talk to richard instances.
+
 * **added steve.richardapi**
 
   Added the richardapi module which has some functions that make
