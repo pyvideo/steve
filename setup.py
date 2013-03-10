@@ -38,6 +38,7 @@ setup(
     url='http://github.com/willkg/steve',
     zip_safe=True,
     packages=find_packages(),
+    include_package_data=True,
     scripts=['scripts/steve-cmd'],
     install_requires=[
         'argparse',
