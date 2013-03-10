@@ -291,8 +291,9 @@ def push_cmd(cfg, parser, parsed, args):
 
     api = steve.restapi.API(api_url)
 
-    all_categories = dict([(cat['title'], cat)
-                           for cat in richardapi.get_all_categories(api_url)])
+    all_categories = dict(
+        [(cat['title'], cat)
+         for cat in steve.richardapi.get_all_categories(api_url)])
 
     try:
         category = cfg.get('project', 'category')
