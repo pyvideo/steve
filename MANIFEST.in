@@ -2,5 +2,12 @@ include README.rst
 include LICENSE
 include AUTHORS
 include CHANGELOG
-include setup.py
+
+
 recursive-include steve *
+
+include setup.py
+include steve/video_reqs.json
+include steve/templates/base.html
+include steve/templates/edit.html
+include steve/templates/home.html
