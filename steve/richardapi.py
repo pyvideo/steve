@@ -320,7 +320,7 @@ def update_video(api_url, username, auth_key, video_id, video_data):
 
     # Try to get the video on the site. This will kick up a 404
     # if it doesn't exist.
-    api.video(video_id).get()
+    api.video(video_id).get(username=username, api_key=auth_key)
 
     # Everything is probably fine, so try to update the data.
     return restapi.get_content(
