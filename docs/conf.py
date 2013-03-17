@@ -49,7 +49,7 @@ copyright = u'2012, 2013 Will Kahn-Greene'
 # built documents.
 
 try:
-    from steve._version import __version__
+    from steve import __version__
     # The short X.Y version.
     version = '.'.join(__version__.split('.')[:2])
     # The full version, including alpha/beta/rc tags.

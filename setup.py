@@ -12,7 +12,7 @@ import os
 
 
 READMEFILE = 'README.rst'
-VERSIONFILE = os.path.join('steve', '_version.py')
+VERSIONFILE = os.path.join('steve', '__init__.py')
 VSRE = r"""^__version__ = ['"]([^'"]*)['"]"""
 
 
