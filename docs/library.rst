@@ -67,7 +67,7 @@ Update language
 ---------------
 
 This fixes the `language` property in each json file. It sets it to
-"Italian" if the word "Italiano" appears in the summary. Otherwise it
+"Italian" if the word "Italiana" appears in the summary. Otherwise it
 sets it to "English".
 
 ::

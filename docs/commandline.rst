@@ -2,9 +2,71 @@
  Using steve - commandline
 ===========================
 
+The ``steve-cmd`` utility is designed to automate the basic tasks that
+result in you having a directory of JSON files each containing the
+metadata for a single video.
+
+After doinge some ``steve-cmd`` work, you can then tar/zip this
+directory up and send it to someone who has API access to the richard
+instance you're collecting videos for. This person can then look at
+the data and push it.
+
+In this way, anyone can generate the metadata for a richard instance
+from the comfort of their own command line.
+
+
+Usage
+=====
+
 For list of subcommands, arguments and other help, do this::
 
     steve-cmd --help
+
+The basic commands are these:
+
+**createproject**
+
+    Creates the directory structure and configuration files for a new
+    steve project. Each project is a collection of videos from a
+    single source.
+
+**fetch**
+
+    Fetches the metadata for the videos from the url where all the
+    videos are hosted and puts it in JSON files in the ``json/``
+    directory of your steve project.
+
+**status**
+
+    Tells you the editing status of all the JSON files.
+
+**verify**
+
+    Goes through the JSON files and verifies correctness of the keys
+    and values. Are the required data elements present? Are the values
+    of the correct type? Are there any "bad" values?
+
+**webedit**
+
+    Provides a (really super duper) basic web server app that lets you
+    go through the JSON files in your web browser.
+
+
+Also, there are some other subcommands:
+
+**push**
+
+    Pushes a bunch of JSON files to a richard instance.
+
+**pull**
+
+    Pulls a bunch of data from a richard instance and puts it in
+    JSON files.
+
+**scrapevideo**
+
+    This is a convenience subcommand for scraping a single video at a
+    url and showing the metadata.
 
 
 Example use
@@ -21,14 +83,16 @@ Example use
 
    This creates a ``europython2011`` directory for project files.
 
+   I usually call this the project directory.
+
    In that directory is:
 
-   1. a ``steve.ini`` project config file.
-   2. a ``json`` directory which hold the video metadata json files.
+   1. a ``steve.ini`` project config file
+   2. a ``json/`` directory which hold the video metadata json files
 
-   This is usually where I store all the batch-processing scripts I
-   write to manipulate the metadata, too, since this is the project
-   directory that the config file is in.
+
+   I usually have all my helper scripts in the project directory since
+   it has the ``steve.ini`` file.
 
 3. ``cd europython2011``
 
@@ -50,33 +114,46 @@ Example use
        # here.
        youtube_embed = object
 
+       # The url for the richard instance api.
+       # e.g. url = http://example.com/api/v1/
+       # api_url =
+
+       # Your username and api key.
+       #
+       # Alternatively, you can pass this on the command line or put it in a
+       # separate API_KEY file which you can keep out of version control.
+       # e.g. username = willkg
+       #      api_key = OU812
+       # username =
+       # api_key =
+
+
+   If you're not pushing the JSON files to a richard instance, you can
+   ignore the ``api_url``, ``username`` and ``api_key`` keys.
+
 5. Run: ``steve-cmd fetch``
 
    This fetches the video metadata from that YouTube user and
    generates a series of JSON files---one for each video---and puts
-   them in the ``json`` directory.
+   them in the ``json/`` directory.
 
    The format for each file matches the format expected by the richard
    API.
 
-6. Run: ``steve-cmd status``
+6. See the status of your video metadata.
+
+   Run: ``steve-cmd status``
 
    Lists filenames for all videos that have a non-empty whiteboard
    field. Because you've just downloaded the metadata, all of the
    videos have a whiteboard field stating they haven't been edited,
    yet.
 
-   .. Note::
-
-      If you pass in ``--list``, it'll print out a list of the files
-      one per line making it easier to use with other command line
-      utilities.
-
-7. Run: ``steve-cmd ls``
+   Run: ``steve-cmd ls``
 
    Lists titles and some other data for each video in the set.
 
-8. Now you go through and edit the json metadata. There are a few ways
+7. Now you go through and edit the json metadata. There are a few ways
    to do this. **Don't** just pick one way---mix and match them to
    reduce the work required.
 
@@ -86,7 +163,9 @@ Example use
 
    1. **Edit with your favorite editor.**
 
-      You can use the ``status`` command to make this easier::
+      You can use the ``status`` command to make this easier.
+
+      For example, if you use vim::
 
           steve-cmd status --list | xargs vim
 
@@ -155,7 +234,7 @@ Example use
       This is helpful when you have a few things to fix and don't feel
       like writing json.
 
-9. Run: ``steve-cmd verify``
+8. Run: ``steve-cmd verify``
 
    This goes through all the json files and verifies correctness.
 
@@ -165,13 +244,16 @@ Example use
 
    Are values that should be in HTML in HTML?
 
-10. If you have write access for the API of the server, then you can
-    do::
+9. If you don't have an API key that gives you write access to the server,
+   then tar the ``json/`` directory up and send it to someone who does.
 
-        steve-cmd push
+   If you have do have an API key that gives you write access to the
+   server, then you can do::
 
-    Otherwise, tar up the project directory and send it to someone who
-    does.
+       steve-cmd push
+
+   And that will create the videos on the server and update the JSON
+   files with the new ids.
 
 
 That's it!
