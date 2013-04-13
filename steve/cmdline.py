@@ -11,6 +11,7 @@ import json
 import os
 import string
 import sys
+import unicodedata
 
 import argparse
 import blessings
@@ -148,7 +149,9 @@ def fetch_cmd(cfg, parser, parsed, args):
 
         filename = '{0:04d}{1}.json'.format(i, filename[:40])
 
-        print 'Working on {0}... ({1})'.format(video.title, filename)
+        print 'Working on {0}... ({1})'.format(
+            unicodedata.normalize('NFKD', video.title).encode('ascii', 'ignore'),
+            filename)
         item = vidscraper_to_dict(video, youtube_embed=youtube_embed)
 
         f = open(os.path.join('json', filename), 'w')
