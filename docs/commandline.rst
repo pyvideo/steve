@@ -234,6 +234,10 @@ Example use
       This is helpful when you have a few things to fix and don't feel
       like writing json.
 
+
+   If there are other tools you want to use---go for it. Anything
+   to get the job done.
+
 8. Run: ``steve-cmd verify``
 
    This goes through all the json files and verifies correctness.
@@ -244,15 +248,17 @@ Example use
 
    Are values that should be in HTML in HTML?
 
-9. If you don't have an API key that gives you write access to the server,
+9. Now it's time to submit your changes!
+
+   If you do not have an API key that gives you write access to the server,
    then tar the ``json/`` directory up and send it to someone who does.
 
-   If you have do have an API key that gives you write access to the
+   If you do have an API key that gives you write access to the
    server, then you can do::
 
        steve-cmd push
 
-   And that will create the videos on the server and update the JSON
+   That will create the videos on the server and update the JSON
    files with the new ids.
 
 
