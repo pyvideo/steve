@@ -76,7 +76,6 @@ class Http5xxException(RestAPIException):
             print exc.response.content
 
     """
-
     pass
 
 
