@@ -94,6 +94,15 @@
   }, 
   {
     "has_default": false, 
+    "name": "duration", 
+    "md": false, 
+    "choices": [], 
+    "null": true, 
+    "type": "IntegerField", 
+    "empty_strings": false
+  }, 
+  {
+    "has_default": false, 
     "name": "video_ogv_length", 
     "md": false, 
     "choices": [], 
