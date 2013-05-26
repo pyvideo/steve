@@ -30,7 +30,7 @@ from steve.util import (
     YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
     out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
     load_json_files, save_json_file, save_json_files, get_from_config,
-verify_json_files)
+    verify_json_files)
 from steve.webedit import serve
 
 
@@ -150,7 +150,8 @@ def fetch_cmd(cfg, parser, parsed, args):
         filename = '{0:04d}{1}.json'.format(i, filename[:40])
 
         print 'Working on {0}... ({1})'.format(
-            unicodedata.normalize('NFKD', video.title).encode('ascii', 'ignore'),
+            unicodedata.normalize('NFKD', video.title).encode(
+                'ascii', 'ignore'),
             filename)
         item = vidscraper_to_dict(video, youtube_embed=youtube_embed)
 

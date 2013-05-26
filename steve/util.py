@@ -356,7 +356,8 @@ def verify_video_data(data, category=None):
 
                     errors.append('"{0}" field must be an int'.format(key))
             elif req['choices'] and data[key] not in req['choices']:
-                errors.append('"{0}" field must be one of {1}'.format(
+                errors.append(
+                    '"{0}" field must be one of {1}'.format(
                         key, req['choices']))
 
         elif req['type'] == 'TextField':

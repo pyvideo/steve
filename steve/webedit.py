@@ -89,10 +89,11 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
 
     def route_home(self, path):
         config = get_project_config()
-        self.render_response(200, 'home.html', {
+        self.render_response(
+            200, 'home.html', {
                 'title': config.get('project', 'category'),
                 'data_files': load_json_files(config)
-                })
+            })
 
     def route_edit(self, path):
         cfg = get_project_config()
@@ -118,26 +119,29 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
         for req in reqs:
             key = req['name']
             if key == 'category' and category:
-                fields.append({
+                fields.append(
+                    {
                         'name': req['name'],
                         'value': category
-                        })
+                    })
             else:
-                fields.append({
+                fields.append(
+                    {
                         'name': req['name'],
                         'type': req['type'],
                         'choices': req['choices'],
                         'md': req['md'],
                         'value': data.get(key, '')
-                        })
+                    })
 
-        self.render_response(200, 'edit.html', {
+        self.render_response(
+            200, 'edit.html', {
                 'title': 'edit {0}'.format(data['title']),
                 'fn': fn,
                 'fields': fields,
                 'prev_fn': prev_fn,
                 'next_fn': next_fn
-                })
+            })
 
     def route_save(self, path):
         cfg = get_project_config()
