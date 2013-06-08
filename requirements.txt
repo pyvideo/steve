@@ -13,5 +13,5 @@ pyquery
 requests
 wsgiref
 
-# Need master tip of vidscraper which works with requests >= 1.0
-https://github.com/pculture/vidscraper/zipball/master#egg=vidscraper
+# Need develop tip of vidscraper which works with requests >= 1.0
+https://github.com/pculture/vidscraper/zipball/develop#egg=vidscraper
