@@ -155,6 +155,7 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
 
         for req in reqs:
             key = req['name']
+            print key, req['type']
             if key in form_data:
                 value = None
                 if req['type'] == 'IntegerField':
@@ -170,17 +171,20 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
                     # TODO: Verify the data format. Maybe if there is
                     # no slug field, we create it from the title?
                     value = form_data[key].value
-                elif req['type'] in ('TextArrayField'):
+                elif req['type'] == 'TextArrayField':
                     # Split the field on carriage returns and drop any
                     # empty strings.
-                    value = [mem.strip()
-                             for mem in form_data[key].value.split('\n')
+                    value = form_data[key].value
+                    value = [mem.strip() for mem in value.split('\n')
                              if mem.strip()]
+                    print repr(value)
 
                 data[key] = value
             else:
                 if req['type'] in ('CharField', 'TextField'):
                     data[key] = ''
+                elif req['type'] == 'TextArrayField':
+                    data[key] = []
 
                 # TODO: What to do about other fields? Set to default?
 
