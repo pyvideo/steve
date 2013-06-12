@@ -11,17 +11,8 @@ fix it and make it better.
 Project details
 ===============
 
-Code:
-    https://github.com/willkg/steve
-
-Documentation:
-    http://steve.rtfd.org
-
-Issue tracker:
-    https://github.com/willkg/steve/issues
-
-IRC:
-    ``#richard`` on irc.mozilla.org
-
-License:
-    BSD
+:Code:          https://github.com/willkg/steve
+:Documentation: http://steve.rtfd.org
+:Issue tracker: https://github.com/willkg/steve/issues
+:IRC:           ``#richard`` on irc.mozilla.org
+:License:       BSD
