@@ -2,11 +2,10 @@ include README.rst
 include LICENSE
 include CONTRIBUTORS
 include CHANGELOG
-
-recursive-include steve *
-
+include requirements.txt
 include setup.py
-include steve/video_reqs.json
-include steve/templates/base.html
-include steve/templates/edit.html
-include steve/templates/home.html
+include maketarball.sh
+
+recursive-include docs *.py *.rst Makefile
+
+recursive-include steve *.py *.json *.html
