@@ -14,6 +14,7 @@ import os
 import sys
 import textwrap
 from functools import wraps
+from urlparse import urlparse
 
 import html2text
 import vidscraper
@@ -33,6 +34,12 @@ YOUTUBE_EMBED = {
         '<iframe id="player" width="640" height="390" frameborder="0" '
         'src="http://youtube.com/v/{guid}"></iframe>')
     }
+
+
+def is_youtube(url):
+    parsed = urlparse(url)
+    return parsed.netloc.startswith(
+        ('www.youtube.com', 'youtube.com', 'youtu.be'))
 
 
 class SteveException(Exception):
@@ -276,7 +283,8 @@ def vidscraper_to_dict(video, youtube_embed=None):
 
     item['embed'] = video.embed_code
 
-    if (youtube_embed is not None and 'youtube.com' in video.link
+    if (youtube_embed is not None
+            and is_youtube(video.link)
             and hasattr(video, 'guid')):
 
         guid = video.guid
@@ -580,7 +588,7 @@ def scrapevideo(video_url):
             data[field] = dt.isoformat()
 
     data['url'] = video_url
-    if 'youtube.com' in video_url and 'guid' in data and data['guid']:
+    if is_youtube(video_url) and 'guid' in data and data['guid']:
         guid = data['guid'].split('/')[-1]
         data['object_embed_code'] = YOUTUBE_EMBED['object'].format(guid=guid)
         data['iframe_embed_code'] = YOUTUBE_EMBED['iframe'].format(guid=guid)

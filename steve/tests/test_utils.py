@@ -11,7 +11,7 @@ from unittest import TestCase
 
 from nose.tools import eq_
 
-from steve.util import verify_video_data, html_to_markdown
+from steve.util import html_to_markdown, is_youtube, verify_video_data
 
 
 class TestVerifyVideoData(TestCase):
@@ -126,3 +126,13 @@ def test_html_to_markdown():
     """Test html_to_markdown"""
     eq_(html_to_markdown('<p>this is <b>html</b>!</p>'),
         u'this is **html**!')
+
+
+def test_is_youtube():
+    data = [
+        ('http://www.youtube.com/watch?v=N29XAFjiKf4', True),
+        ('http://youtu.be/N29XAFjiKf4', True),
+    ]
+
+    for url, expected in data:
+        eq_(is_youtube(url), expected)
