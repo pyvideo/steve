@@ -9,7 +9,6 @@
 import ConfigParser
 import json
 import os
-import string
 import sys
 import unicodedata
 
@@ -30,7 +29,7 @@ from steve.util import (
     YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
     out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
     load_json_files, save_json_file, save_json_files, get_from_config,
-    verify_json_files)
+    verify_json_files, generate_filename)
 from steve.webedit import serve
 
 
@@ -71,8 +70,6 @@ api_url =
 # username =
 # api_key =
 """
-
-ALLOWED_LETTERS = string.ascii_letters + string.digits + '-_'
 
 
 def createproject_cmd(parser, parsed, args):
@@ -140,14 +137,9 @@ def fetch_cmd(cfg, parser, parsed, args):
 
     print 'Found {0} videos...'.format(video_feed.video_count)
     for i, video in enumerate(video_feed):
-        if video.title:
-            filename = video.title.replace(' ', '_')
-            filename = ''.join([c for c in filename if c in ALLOWED_LETTERS])
-            filename = '_' + filename
-        else:
-            filename = ''
-
-        filename = '{0:04d}{1}.json'.format(i, filename[:40])
+        filename = generate_filename(video.title or '')
+        filename = '{index:04d}{basename}.json'.format(
+            index=i, basename=filename[:40])
 
         print 'Working on {0}... ({1})'.format(
             unicodedata.normalize('NFKD', video.title).encode(
@@ -384,7 +376,7 @@ def push_cmd(cfg, parser, parsed, args):
                 contents['id'], contents['title'], fn))
             try:
                 vid = steve.restapi.get_content(
-                    api.video(contents['id']).put(
+                    api.video(str(contents['id'])).put(
                         contents, username=username, api_key=api_key))
             except steve.restapi.RestAPIException as exc:
                 err('   Error?: {0}'.format(exc))

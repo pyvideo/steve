@@ -136,7 +136,7 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
 
         self.render_response(
             200, 'edit.html', {
-                'title': 'edit {0}'.format(data['title']),
+                'title': u'edit {0}'.format(data['title']),
                 'fn': fn,
                 'fields': fields,
                 'prev_fn': prev_fn,
@@ -187,6 +187,11 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
                     data[key] = []
 
                 # TODO: What to do about other fields? Set to default?
+
+        # Category is a special case. If it's empty, we should remove
+        # it so verify works well.
+        if 'category' in data and not data['category'].strip():
+            del data['category']
 
         save_json_file(cfg, fn, data)
 

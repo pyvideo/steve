@@ -17,6 +17,26 @@ import urlparse
 import requests
 
 
+def show_me_the_logs():
+    """Turns on debug-level logging in requests
+
+    This helps to find out wtf is going wrong.
+
+    """
+    import httplib
+    httplib.HTTPConnection.debuglevel = 1
+
+    import logging
+    # you need to initialize logging, otherwise you will not see
+    # anything from requests
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
+
+
 class RestAPIException(Exception):
     def __init__(self, *args, **kwargs):
         self.__dict__.update(kwargs)
@@ -128,7 +148,7 @@ class Resource(object):
 
         id_ = kwargs.get('id')
         if id_:
-            url = urljoin(url, id_)
+            url = urljoin(url, str(id_))
 
         # Make all urls end in /.
         if not url.endswith('/'):
@@ -142,6 +162,13 @@ class Resource(object):
         kwargs['id'] = id_
         return Resource(**kwargs)
 
+    def _get_auth_header(self, auth_token):
+        if auth_token is not None:
+            return {
+                'Authorization': 'Token {0}'.format(auth_token)
+            }
+        return {}
+
     def _request(self, method, data=None, params=None, headers=None,
                  url=None):
         if not url:
@@ -149,7 +176,8 @@ class Resource(object):
 
         default_headers = {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'}
+            'Accept': 'application/json'
+        }
         if headers:
             default_headers.update(headers)
 
@@ -167,22 +195,27 @@ class Resource(object):
 
         return resp
 
-    def get(self, **kwargs):
-        resp = self._request('GET', params=kwargs)
+    def get(self, auth_token=None, **kwargs):
+        headers = self._get_auth_header(auth_token)
+
+        resp = self._request('GET', params=kwargs, headers=headers)
         if 200 <= resp.status_code <= 299:
             return resp
         raise RestAPIException(
             'Unknown response: {0}'.format(resp.status_code),
             response=resp)
 
-    def post(self, data, **kwargs):
+    def post(self, data, auth_token=None, **kwargs):
         jsondata = json.dumps(data)
-
-        resp = self._request('POST', data=jsondata, params=kwargs)
+        headers = self._get_auth_header(auth_token)
+        resp = self._request('POST', data=jsondata, params=kwargs,
+                             headers=headers)
 
         if resp.status_code in (201, 301, 302, 303, 307):
-            location = resp.headers['location']
-            return self._request('GET', params=kwargs, url=location)
+            location = resp.headers.get('location')
+            if location:
+                return self._request('GET', params=kwargs, url=location)
+            return resp
 
         elif 200 <= resp.status_code <= 299:
             return resp
@@ -191,10 +224,11 @@ class Resource(object):
             'Unknown response: {0}'.format(resp.status_code),
             response=resp)
 
-    def put(self, data, **kwargs):
+    def put(self, data, auth_token=None, **kwargs):
         jsondata = json.dumps(data)
-
-        resp = self._request('PUT', data=jsondata, params=kwargs)
+        headers = self._get_auth_header(auth_token)
+        resp = self._request('PUT', data=jsondata, params=kwargs,
+                             headers=headers)
 
         if resp.status_code in (201, 301, 302, 303, 307):
             location = resp.headers['location']
@@ -211,8 +245,9 @@ class Resource(object):
             'Unknown response: {0}'.format(resp.status_code),
             response=resp)
 
-    def delete(self, **kwargs):
-        resp = self._request('DELETE', params=kwargs)
+    def delete(self, auth_token=None, **kwargs):
+        headers = self._get_auth_header(auth_token)
+        resp = self._request('DELETE', params=kwargs, headers=headers)
         if 200 <= resp.status_code <= 299:
             return resp
         raise RestAPIException(
@@ -252,4 +287,4 @@ class API(object):
         if key in self.__dict__:
             return self.__dict__[key]
 
-        return Resource(url=urljoin(self.base_url, key))
+        return Resource(url=urljoin(self.base_url, str(key)))

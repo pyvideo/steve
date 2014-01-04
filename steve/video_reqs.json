@@ -70,7 +70,7 @@
     "name": "copyright_text", 
     "md": false, 
     "choices": [], 
-    "null": true, 
+    "null": false, 
     "type": "TextField", 
     "empty_strings": true
   }, 
@@ -79,7 +79,7 @@
     "name": "embed", 
     "md": false, 
     "choices": [], 
-    "null": true, 
+    "null": false, 
     "type": "TextField", 
     "empty_strings": true
   }, 
@@ -234,15 +234,6 @@
     "choices": [], 
     "null": true, 
     "type": "DateField", 
-    "empty_strings": false
-  }, 
-  {
-    "has_default": false, 
-    "name": "added", 
-    "md": false, 
-    "choices": [], 
-    "null": false, 
-    "type": "DateTimeField", 
     "empty_strings": false
   }, 
   {

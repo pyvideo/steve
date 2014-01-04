@@ -11,6 +11,7 @@ import ConfigParser
 import datetime
 import json
 import os
+import string
 import sys
 import textwrap
 from functools import wraps
@@ -40,6 +41,9 @@ def is_youtube(url):
     parsed = urlparse(url)
     return parsed.netloc.startswith(
         ('www.youtube.com', 'youtube.com', 'youtu.be'))
+
+
+ALLOWED_LETTERS = string.ascii_letters + string.digits + '-_'
 
 
 class SteveException(Exception):
@@ -228,11 +232,19 @@ def convert_to_json(structure):
     return json.dumps(structure, indent=2, sort_keys=True, default=convert)
 
 
+def generate_filename(text):
+    filename = text.replace(' ', '_')
+    filename = ''.join([c for c in filename if c in ALLOWED_LETTERS])
+    filename = '_' + filename
+    return filename
+
+
 def vidscraper_to_dict(video, youtube_embed=None):
     """Converts vidscraper Video to a python dict
 
     :arg video: vidscraper Video
-    :arg youtube_embed: the embed code to use for YouTube videos
+    :arg youtube_embed: the embed code to use for YouTube videos or
+        "object" or "iframe"
 
     :returns: dict
 
@@ -278,14 +290,19 @@ def vidscraper_to_dict(video, youtube_embed=None):
                 item['video_flv_url'] = f.url
                 item['video_flv_download_only'] = False
             else:
-                raise ValueError(
-                    'No clue what to do with {0}'.format(f.mime_type))
+                print 'No clue what to do with {0}'.format(f.mime_type)
+                # raise ValueError(
+                #     'No clue what to do with {0}'.format(f.mime_type))
 
     item['embed'] = video.embed_code
 
     if (youtube_embed is not None
-            and is_youtube(video.link)
-            and hasattr(video, 'guid')):
+        and video.link
+        and is_youtube(video.link)
+        and hasattr(video, 'guid')):
+
+        if youtube_embed in YOUTUBE_EMBED.keys():
+            youtube_embed = YOUTUBE_EMBED[youtube_embed]
 
         guid = video.guid
         if guid:

@@ -25,7 +25,7 @@ class MissingRequiredData(SteveException):
             # oh noes! i did something wrogn!
 
             # This prints the list of errors.
-            print exc.errors
+            print exc
 
     """
     pass
@@ -59,10 +59,10 @@ def get_all_categories(api_url):
     """
     api = restapi.API(api_url)
 
-    # Build a dict of cat title -> cat data.
-    all_categories = restapi.get_content(api.category.get(limit=0))
+    # Build a dict of cat title -> cat data
+    resp = restapi.get_content(api.category.get(limit=0))
 
-    return all_categories['objects']
+    return resp['results']
 
 
 def get_category(api_url, title):
@@ -87,77 +87,7 @@ def get_category(api_url, title):
     raise DoesNotExist('category "{0}" does not exist'.format(title))
 
 
-def create_category_if_missing(api_url, username, auth_key, category_data):
-    """Creates a category on the site if it doesn't already exist
-
-    This checks to see if the category is already on the site by
-    checking titles and slugs.
-
-    If the category does not exist, it creates it and returns the new
-    category data.
-
-    If the category does exist, then it just returns the category.
-
-    :arg api_url: URL for the api
-    :arg username: username
-    :arg auth_key: auth key for that username for that API URL
-    :arg category_data: Python dict holding the values to create
-        this category
-
-    :returns: the category data
-
-    :raises steve.restapi.Http5xxException: if there's a server
-        error
-    :raises steve.richardapi.MissingRequiredData: if the category_data
-        is missing keys that are required
-
-    Example::
-
-        from steve.util import create_category_if_not_exists
-
-        cat = create_category_if_not_exists(
-            'http://pyvideo.org/api/v1/',
-            'carl',
-            'ou812authkey',
-            {'title': 'Test Category 2013'})
-
-        print cat
-        # Prints something like:
-        # {u'description': u'', u'videos': [],
-        #  u'title': u'Test Category 2013', u'url': u'',
-        #  u'whiteboard': u'', u'start_date': None,
-        #  u'id': u'114', u'slug': u'test-category-2013',
-        #  u'resource_uri': u'/api/v1/category/114/'}
-
-
-    .. Note::
-
-       Check the richard project in the video app at ``models.py`` for
-       up-to-date list of fields and their types.
-
-       https://github.com/willkg/richard/blob/master/richard/videos/models.py
-
-    """
-
-    if not 'title' in category_data or not category_data['title']:
-        raise MissingRequiredData(
-            'category data has errors',
-            errors=['missing "title"'])
-
-    try:
-        cat = get_category(api_url, category_data['title'])
-        return cat
-
-    except DoesNotExist:
-        pass
-
-    api = restapi.API(api_url)
-    return restapi.get_content(api.category.post(category_data,
-                                                 username=username,
-                                                 api_key=auth_key))
-
-
-def create_video(api_url, username, auth_key, video_data):
+def create_video(api_url, auth_token, video_data):
     """Creates a video on the site
 
     This creates a video on the site using HTTP POST. It returns
@@ -168,8 +98,7 @@ def create_video(api_url, username, auth_key, video_data):
        This doesn't yet check to see if the video already exists.
 
     :arg api_url: URL for the api
-    :arg username: username
-    :arg auth_key: auth key for that username for that API URL
+    :arg auth_token: auth token
     :arg video_data: Python dict holding the values to create
         this video
 
@@ -178,8 +107,7 @@ def create_video(api_url, username, auth_key, video_data):
     :raises steve.restapi.Http5xxException: if there's a server
         error
     :raises steve.richardapi.MissingRequiredData: if the video_data
-        is missing keys that are required---check the ``errors``
-        property of the exception for a list of errors
+        is missing keys that are required
 
     Example::
 
@@ -190,7 +118,6 @@ def create_video(api_url, username, auth_key, video_data):
         try:
             video = create_video(
                 'http://pyvideo.org/api/v1/',
-                'carl',
                 'ou812authkey',
                 {
                     'category': 'Test Category',
@@ -206,7 +133,7 @@ def create_video(api_url, username, auth_key, video_data):
 
         except MissingRequiredData as exc:
             # Prints the errors
-            print exc.errors
+            print exc
 
 
     .. Note::
@@ -221,24 +148,21 @@ def create_video(api_url, username, auth_key, video_data):
 
     if errors:
         raise MissingRequiredData(
-            'video data has errors', errors=errors)
+            'video data has errors: {0}'.format(repr(errors)))
 
     # TODO: Check to see if the video exists already. Probably
     # want to use (category, title) as a key.
 
     api = restapi.API(api_url)
     return restapi.get_content(
-        api.video.post(data=video_data,
-                       username=username,
-                       api_key=auth_key))
+        api.video.post(data=video_data, auth_token=auth_token))
 
 
-def update_video(api_url, username, auth_key, video_id, video_data):
+def update_video(api_url, auth_token, video_id, video_data):
     """Updates an existing video on the site
 
     This updates an existing video on the site using HTTP PUT. It
     returns the final video data.
-
 
     .. Warning::
 
@@ -251,8 +175,7 @@ def update_video(api_url, username, auth_key, video_id, video_data):
 
 
     :arg api_url: URL for the api
-    :arg username: username
-    :arg auth_key: auth key for that username for that API URL
+    :arg auth_token: auth token
     :arg video_id: The id for the video
     :arg video_data: Python dict holding all the data for this video
 
@@ -263,8 +186,7 @@ def update_video(api_url, username, auth_key, video_id, video_data):
     :raises steve.restapi.Http5xxException: if there's a server
         error
     :raises steve.richardapi.MissingRequiredData: if the video_data
-        is missing keys that are required---check the ``errors``
-        property of the exception for a list of errors
+        is missing keys that are required
 
 
     Example::
@@ -276,7 +198,6 @@ def update_video(api_url, username, auth_key, video_id, video_data):
         try:
             video = update_video(
                 'http://pyvideo.org/api/v1/',
-                'carl',
                 'ou812authkey',
                 1101,
                 {
@@ -294,7 +215,7 @@ def update_video(api_url, username, auth_key, video_id, video_data):
 
         except MissingRequiredData as exc:
             # Prints the errors
-            print exc.errors
+            print exc
 
 
     .. Note::
@@ -306,24 +227,24 @@ def update_video(api_url, username, auth_key, video_id, video_data):
 
     """
     # If you do a create_video, then update that data and do an
-    # update_video, the data has 'resource_uri' in it. We want to nix
-    # that if it's there.
+    # update_video, the data has a few fields in it that shouldn't be
+    # there. We nix those here.
     video_data.pop('resource_uri', None)
+    video_data.pop('added', None)
 
     errors = verify_video_data(video_data)
 
     if errors:
         raise MissingRequiredData(
-            'video data has errors', errors=errors)
+            'video data has errors: {0}'.format(repr(errors)))
 
     api = restapi.API(api_url)
 
     # Try to get the video on the site. This will kick up a 404
     # if it doesn't exist.
-    api.video(video_id).get(username=username, api_key=auth_key)
+    api.video(video_id).get(auth_token=auth_token)
 
     # Everything is probably fine, so try to update the data.
     return restapi.get_content(
         api.video(video_id).put(data=video_data,
-                                username=username,
-                                api_key=auth_key))
+                                auth_token=auth_token))
