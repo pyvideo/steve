@@ -10,7 +10,9 @@ conference.
 `steve <https://github.com/willkg/steve>`_ is a command line utility
 for downloading information for a conference, downloading all the
 metadata for the videos, and making it easier to transform the data,
-fix it and make it better.
+fix it and make it better. Then steve grew into a library of functions
+making it easier to manipulate video metadata and push it into
+richard.
 
 richard and steve go together like peanut butter and jelly. You could
 use one without the other, but it's daft. steve uses richard's API for

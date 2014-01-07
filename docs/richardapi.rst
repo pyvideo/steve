@@ -21,13 +21,14 @@ steve.richardapi
 
    Carl, Ryan: These functions are for you!
 
+   They use an auth token. If you need an auth token, let one of the
+   pyvideo admin know.
+
 .. automodule:: steve.richardapi
 
    .. autofunction:: get_all_categories(api_url)
 
    .. autofunction:: get_category(api_url, title)
-
-   .. autofunction:: create_category_if_missing(api_url, username, auth_key, category_data)
 
    .. autofunction:: create_video(api_url, username, auth_key, video_data)
 

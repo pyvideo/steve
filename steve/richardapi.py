@@ -118,8 +118,8 @@ def create_video(api_url, auth_token, video_data):
         try:
             video = create_video(
                 'http://pyvideo.org/api/v1/',
-                'ou812authkey',
-                {
+                auth_token='ou812authkey',
+                video_data={
                     'category': 'Test Category',
                     'state': 1,
                     'title': 'Test video title',
@@ -198,9 +198,9 @@ def update_video(api_url, auth_token, video_id, video_data):
         try:
             video = update_video(
                 'http://pyvideo.org/api/v1/',
-                'ou812authkey',
-                1101,
-                {
+                auth_token='ou812authkey',
+                video_id=1101,
+                video_data={
                     'id': 1101,
                     'category': 'Test Category',
                     'state': 1,

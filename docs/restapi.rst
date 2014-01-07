@@ -28,29 +28,35 @@ Using the REST client API by itself
 It's similar to slumber except a little less feature(bug)-full.
 The gist of it is this:
 
-1. Import some stuff::
+1. Import some stuff:
 
-       from steve.restapi import API, RestAPIException, get_content
+   .. code-block:: python
 
-2. Build an `API` object::
+      from steve.restapi import API, RestAPIException, get_content
 
-       api = API('http://localhost/v1/api/')
+2. Build an `API` object:
 
-3. Use the `API` object to fiddle with resources::
+   .. code-block:: python
 
-       # Get all videos
-       all_videos = api.video.get()
+      api = API('http://localhost/v1/api/')
 
-       # Get video with id 1
-       video_1 = get_content(api.video(1).get())
+3. Use the `API` object to fiddle with resources:
 
-       # Change the data, then put it
-       video_1['somekey'] = 'newvalue'
-       api.video(1).put(data=video_1)
+   .. code-block:: python
 
-       # Create a new video. This does a POST and if there's
-       # a 201, it'll return the results of that.
-       newvideo = get_content(api.video.post(data={'somekey': 'newvalue'}))
+      # Get all videos
+      all_videos = api.video.get()
+
+      # Get video with id 1
+      video_1 = get_content(api.video(1).get())
+
+      # Change the data, then put it
+      video_1['somekey'] = 'newvalue'
+      api.video(1).put(data=video_1)
+
+      # Create a new video. This does a POST and if there's
+      # a 201, it'll return the results of that.
+      newvideo = get_content(api.video.post(data={'somekey': 'newvalue'}))
 
 That's pretty much it!
 

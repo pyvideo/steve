@@ -5,6 +5,33 @@
 version 0.3 -- in development
 =============================
 
+**API Changes**
+
+* **steve.richardapi functions changed signatures**
+
+  The new functions match the new v2 richard api. These involve
+  sending just an auth token---no more sending an auth token and
+  a username.
+
+* **steve.richardapi.MissingRequiredData changed**
+
+  If you were missing data, you could look at the ``errors`` attribute
+  of the ``MissingDataRequired`` exception for details. That was dumb
+  and difficult. Now it's just part of the message. So you can do this:
+
+  .. code-block::
+
+     try:
+         # do something wrogn
+     except MissingRequiredData as exc:
+         print exc
+
+
+* **nixed steve.richardapi.create_category_if_missing**
+
+  I think this was causing too many problems. You now have to create
+  the category on the server.
+
 **Other Changes**
 
 * **bug fixes**
