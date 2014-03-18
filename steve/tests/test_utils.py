@@ -19,8 +19,7 @@ class TestVerifyVideoData(TestCase):
         'title': 'Foo',
         'category': 'Test Category',
         'language': 'English',
-        'added': datetime.datetime.now().isoformat()
-        }
+    }
 
     def test_default_minimum(self):
         """Verify that default verifies"""
@@ -66,12 +65,8 @@ class TestVerifyVideoData(TestCase):
         del data['language']
         eq_(len(verify_video_data(data)), 1)
 
-        data = dict(self.default)
-        del data['added']
-        eq_(len(verify_video_data(data)), 1)
-
-        # Four errors if we pass in an empty dict
-        eq_(len(verify_video_data({})), 4)
+        # Three errors if we pass in an empty dict
+        eq_(len(verify_video_data({})), 3)
 
     def test_speakers(self):
         """Tests speakers which is a TextArrayField"""

@@ -265,7 +265,6 @@ def vidscraper_to_dict(video, youtube_embed=None):
     item['tags'] = video.tags
     item['speakers'] = []
 
-    item['added'] = datetime.datetime.now()
     item['recorded'] = video.publish_datetime
     item['language'] = u'English'
 
