@@ -12,5 +12,5 @@
 # * 1.0a2
 # * 1.0b2
 # * 1.0
-__version__ = '0.3.dev'
-__releasedate__ = ''
+__version__ = '0.3'
+__releasedate__ = '2014-03-17'
