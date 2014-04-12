@@ -151,7 +151,6 @@ def get_project_config():
             pass
 
     if cred_file:
-
         cred_file = os.path.abspath(cred_file)
 
         if os.path.exists(cred_file):
@@ -226,7 +225,7 @@ def load_tags_file(config):
 def convert_to_json(structure):
     def convert(obj):
         if isinstance(obj, (datetime.datetime, datetime.date)):
-            return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+            return obj.strftime('%Y-%m-%d')
         return obj
 
     return json.dumps(structure, indent=2, sort_keys=True, default=convert)
@@ -235,7 +234,6 @@ def convert_to_json(structure):
 def generate_filename(text):
     filename = text.replace(' ', '_')
     filename = ''.join([c for c in filename if c in ALLOWED_LETTERS])
-    filename = '_' + filename
     return filename
 
 
@@ -300,7 +298,7 @@ def vidscraper_to_dict(video, youtube_embed=None):
         and is_youtube(video.link)
         and hasattr(video, 'guid')):
 
-        if youtube_embed in YOUTUBE_EMBED.keys():
+        if youtube_embed in YOUTUBE_EMBED:
             youtube_embed = YOUTUBE_EMBED[youtube_embed]
 
         guid = video.guid
@@ -576,7 +574,7 @@ def save_json_file(config, filename, contents, **kw):
     fp.close()
 
 
-def scrapevideo(video_url):
+def scrapevideo(video_url, richard=False, youtube_embed=None):
     """Scrapes the url and fixes the data
 
     This is sort of a wrapper around `vidscraper.auto_scrape`. It
@@ -584,6 +582,9 @@ def scrapevideo(video_url):
     adds some additional computed metadata.
 
     :arg video_url: Url of video to scrape.
+    :arg richard: True if you want richard data, False if you want
+        vidscraper data
+    :arg youtube_embed: The embed type for if this is a YouTube video
 
     :returns: Python dict of metadata
 
@@ -594,6 +595,8 @@ def scrapevideo(video_url):
 
     """
     video_data = vidscraper.auto_scrape(video_url)
+    if richard:
+        return vidscraper_to_dict(video_data, youtube_embed)
 
     data = dict([(field, getattr(video_data, field))
                  for field in video_data.fields])

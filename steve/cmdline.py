@@ -26,10 +26,24 @@ except ImportError:
 import steve.restapi
 import steve.richardapi
 from steve.util import (
-    YOUTUBE_EMBED, with_config, BetterArgumentParser, wrap_paragraphs,
-    out, err, vidscraper_to_dict, ConfigNotFound, convert_to_json,
-    load_json_files, save_json_file, save_json_files, get_from_config,
-    verify_json_files, generate_filename)
+    BetterArgumentParser,
+    ConfigNotFound,
+    YOUTUBE_EMBED,
+    convert_to_json,
+    err,
+    generate_filename,
+    get_from_config,
+    get_project_config,
+    load_json_files,
+    out,
+    save_json_file,
+    save_json_files,
+    scrapevideo,
+    verify_json_files,
+    vidscraper_to_dict,
+    with_config,
+    wrap_paragraphs,
+)
 from steve.webedit import serve
 
 
@@ -138,7 +152,7 @@ def fetch_cmd(cfg, parser, parsed, args):
     print 'Found {0} videos...'.format(video_feed.video_count)
     for i, video in enumerate(video_feed):
         filename = generate_filename(video.title or '')
-        filename = '{index:04d}{basename}.json'.format(
+        filename = '{index:04d}_{basename}.json'.format(
             index=i, basename=filename[:40])
 
         print 'Working on {0}... ({1})'.format(
@@ -235,8 +249,27 @@ def scrapevideo_cmd(parser, parsed, args):
         parser.print_byline()
 
     video_url = parsed.video[0]
-    print json.dumps(steve.scrapevideo(video_url), indent=2, sort_keys=True)
+    data = scrapevideo(video_url, parsed.richard, 'object')
+    if parsed.save:
+        cfg = get_project_config()
 
+        projectpath = cfg.get('project', 'projectpath')
+        jsonpath = os.path.join(projectpath, 'json')
+
+        if not os.path.exists(jsonpath):
+            os.makedirs(jsonpath)
+
+        fn = 'json/' + generate_filename(data['title']) + '.json'
+
+        if os.path.exists(fn):
+            err('It already exists!')
+            return 1
+
+        with open(fn, 'w') as fp:
+            fp.write(convert_to_json(data))
+        print 'Saved as {0}'.format(fn)
+    else:
+        print convert_to_json(data)
     return 0
 
 
@@ -298,7 +331,8 @@ def push_cmd(cfg, parser, parsed, args):
             err('Category "{0}" does not exist on server. Build it there '
                 'first.'.format(category))
             return 1
-
+        else:
+            out('Category {0} exists on site.'.format(category))
     except ConfigParser.NoOptionError:
         category = None
 
@@ -355,13 +389,15 @@ def push_cmd(cfg, parser, parsed, args):
         if not update:
             # Nix any id field since that causes problems.
             if 'id' in contents:
+                if not parsed.overwrite:
+                    print 'Skipping... already exists'
+                    continue
                 del contents['id']
 
             out('Pushing {0}'.format(fn))
             try:
-                vid = steve.restapi.get_content(
-                    api.video.post(contents, username=username,
-                                   api_key=api_key))
+                vid = steve.richardapi.create_video(api_url, api_key, contents)
+
                 if 'id' in vid:
                     contents['id'] = vid['id']
                     out('   Now has id {0}'.format(vid['id']))
@@ -512,6 +548,16 @@ def main(argv):
     scrapevideo_parser = subparsers.add_parser(
         'scrapevideo', help='fetches metadata for a video from a site')
     scrapevideo_parser.add_argument(
+        '--richard',
+        action='store_true',
+        default=False,
+        help='return richard JSON format')
+    scrapevideo_parser.add_argument(
+        '--save',
+        action='store_true',
+        default=False,
+        help='saves it to the filesystem using the title as the filename')
+    scrapevideo_parser.add_argument(
         'video',
         nargs=1)
     scrapevideo_parser.set_defaults(func=scrapevideo_cmd)
@@ -526,6 +572,11 @@ def main(argv):
         action='store_true',
         default=False,
         help='update data rather than push new data (PUT vs. POST)')
+    push_parser.add_argument(
+        '--overwrite',
+        action='store_true',
+        default=False,
+        help='if it exists, overwrite it')
     push_parser.set_defaults(func=push_cmd)
 
     pull_parser = subparsers.add_parser(
