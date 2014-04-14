@@ -378,6 +378,7 @@ def push_cmd(cfg, parser, parsed, args):
     out('Username:   {0}'.format(username))
     out('api_key:    {0}'.format(api_key))
     out('update?:    {0}'.format(update))
+    out('# videos:   {0}'.format(len(data)))
     out('Once you push, you can not undo it. Push for realz? Y/N')
     if not raw_input().strip().lower().startswith('y'):
         err('Aborting.')
@@ -411,9 +412,8 @@ def push_cmd(cfg, parser, parsed, args):
             out('Updating {0} "{1}" ({2})'.format(
                 contents['id'], contents['title'], fn))
             try:
-                vid = steve.restapi.get_content(
-                    api.video(str(contents['id'])).put(
-                        contents, username=username, api_key=api_key))
+                vid = steve.richardapi.update_video(
+                    api_url, api_key, contents['id'], contents)
             except steve.restapi.RestAPIException as exc:
                 err('   Error?: {0}'.format(exc))
                 err('   "{0}"'.format(exc.response.content))
