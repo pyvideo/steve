@@ -17,9 +17,7 @@ version 0.3 -- March 17th, 2014
 
   If you were missing data, you could look at the ``errors`` attribute
   of the ``MissingDataRequired`` exception for details. That was dumb
-  and difficult. Now it's just part of the message. So you can do this:
-
-  .. code-block::
+  and difficult. Now it's just part of the message. So you can do this::
 
      try:
          # do something wrogn
