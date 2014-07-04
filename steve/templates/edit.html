@@ -1,73 +1,45 @@
 {% extends 'base.html' %}
-{% block style %}
-<style>
-th {
-  vertical-align: top;
-  text-align: right;
-  background: #ddddff;
-  padding-top: 10px;
-  padding-right: 15px;
-}
-td {
-  padding: 10px;
-}
-input[type='text'] {
-  width: 70em;
-  font: 10pt monospace;
-}
-textarea {
-  width: 70em;
-  height: 8em;
-  font: 10pt monospace;
-}
-.helptext {
-  padding-top: 3px;
-  font: 8pt sans-serif;
-  color: #6666aa;
-}
-.note {
-  font-weight: bold;
-  color: #bb0000;
-}
-.note code {
-  color: #000000;
-  padding: 2px 5px 2px 5px;
-  background: #ffbbbb;
-}
-.error {
-  padding-top: 3px;
-  background: #ffaaaa;
-  font: 10pt sans-serif;
-  font-weight: bold;
-  color: #bb0000;
-}
-</style>
-{% endblock %}
+{% block nav %}
+  <div id="nav">
+    <ul class="nav-nav">
+      <li>STEVE</li>
+      <li><a href="/">Home</a></li>
+
+      <li>
+        {% if prev_fn %}
+          <a href="/edit/{{ prev_fn[5:] }}">&lt;&lt;&lt; PREV</a>
+        {% else %}
+          &lt;&lt;&lt; PREV
+        {% endif %}
+      </li>
+
+      <li>
+        {% if next_fn %}
+          <a href="/edit/{{ next_fn[5:] }}">NEXT &gt;&gt;&gt;</a>
+        {% else %}
+          NEXT &gt;&gt;&gt;
+        {% endif %}
+      </li>
+    </ul>
+    <ul class="nav-nav nav-right">
+      <li>
+        <a href="javascript:document.getElementById('resetbtn').click()">Reset</a>
+      </li>
+      <li>
+        <a href="javascript:document.getElementById('savebtn').click()">Save</a>
+      </li>
+    </ul>
+  </div>
+{% endblock nav %}
+
 {% block content %}
-<p>
-  {% if prev_fn %}
-    <a href="/edit/{{ prev_fn[5:] }}">PREV</a>
-  {% else %}
-    PREV
-  {% endif %}
-  | 
-  {% if next_fn %}
-    <a href="/edit/{{ next_fn[5:] }}">NEXT</a>
-  {% else %}
-    NEXT
-  {% endif %}
-</p>
 <p class="note">
   Note: webedit doesn't currently verify data correctness. If you want
   to verify the data, run <code>steve verify</code> from the command
   line.
 </p>
-<form action="/save/{{ fn[5:] }}" method="POST">
+<form id="videoform" action="/save/{{ fn[5:] }}" method="POST">
 <table>
-  <tr>
-    <td>&nbsp;</td>
-    <td><input type="Reset"><input type="Submit" value="Save data"></td>
-  </tr>
   <tr>
     <th>filename</th>
     <td>{{ fn[5:] }}</td>
@@ -119,7 +91,7 @@ textarea {
   {% endfor %}
   <tr>
     <td>&nbsp;</td>
-    <td><input type="Reset"><input type="Submit" value="Save data"></td>
+    <td><input id="resetbtn" type="Reset"><input id="savebtn" type="Submit" value="Save data"></td>
   </tr>
 </table>
 </form>

@@ -2,14 +2,101 @@
 <head>
   <title>steve webedit: {% block title %}{{ title }}{% endblock %}</title>
   <meta charset="utf-8">
-{% block style %}{% endblock %}
+  <style>
+   th {
+     vertical-align: top;
+     text-align: right;
+     background: #ddddff;
+     padding-top: 10px;
+     padding-right: 15px;
+   }
+   td {
+     padding: 10px;
+   }
+   input[type='text'] {
+     width: 70em;
+     font: 10pt monospace;
+   }
+   textarea {
+     width: 70em;
+     height: 8em;
+     font: 10pt monospace;
+   }
+   .helptext {
+     padding-top: 3px;
+     font: 8pt sans-serif;
+     color: #6666aa;
+   }
+   .note {
+     font-weight: bold;
+     color: #bb0000;
+   }
+   .note code {
+     color: #000000;
+     padding: 2px 5px 2px 5px;
+     background: #ffbbbb;
+   }
+   .error {
+     padding-top: 3px;
+     background: #ffaaaa;
+     font: 10pt sans-serif;
+     font-weight: bold;
+     color: #bb0000;
+   }
+   body {
+     margin: 0;
+     padding: 0;
+   }
+   #nav {
+     background: #ddd;
+     border-width: 0 0 1px;
+     margin: 0 auto;
+     position: fixed;
+     top: 0;
+     right: 0;
+     left: 0;
+     width: 100%;
+     z-index: 10;
+   }
+   #nav ul.nav-nav {
+     margin: 0;
+     padding: 0 0 0 15px;
+   }
+   #nav ul.nav-nav > li {
+     float: left;
+     position: relative;
+     display: block;
+     list-style: outside none none;
+     padding: 5px 15px 5px 0;
+     margin: 0;
+   }
+   #nav ul.nav-nav.nav-right {
+     float: right !important;
+   }
+   #nav ul.nav-nav > li > a {
+     line-height: 20px;
+     position: relative;
+     display: block;
+   }
+   #maincontent {
+     margin-top: 60px;
+     padding: 0px 15px;
+   }
+  </style>
 </head>
 <body>
-<h1>steve webedit: {% block h1title %}{{ title }}{% endblock %}</h1>
-<p>
-  <a href="/">Home</a>
-</p>
-{% block content %}{% endblock %}
+  {% block nav %}
+    <div id="nav">
+      <ul class="nav-nav">
+        <li>STEVE</li>
+        <li class="nav-item"><a href="/">Home</a></li>
+      </ul>
+    </div>
+  {% endblock nav %}
 
+  <div id="maincontent">
+    <h1>{% block h1title %}{{ title }}{% endblock %}</h1>
+    {% block content %}{% endblock %}
+  </div>
 </body>
 </html>
