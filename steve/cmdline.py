@@ -31,6 +31,7 @@ from steve.util import (
     YOUTUBE_EMBED,
     convert_to_json,
     err,
+    fetch_videos_from_url,
     generate_filename,
     get_from_config,
     get_project_config,
@@ -39,6 +40,7 @@ from steve.util import (
     save_json_file,
     save_json_files,
     scrapevideo,
+    stringify,
     verify_json_files,
     vidscraper_to_dict,
     with_config,
@@ -123,6 +125,12 @@ def fetch_cmd(cfg, parser, parsed, args):
     projectpath = cfg.get('project', 'projectpath')
     jsonpath = os.path.join(projectpath, 'json')
 
+    # source_url -> filename
+    source_map = dict(
+        (item['source_url'], fn)
+        for fn, item in load_json_files(cfg)
+    )
+
     if not os.path.exists(jsonpath):
         os.makedirs(jsonpath)
 
@@ -146,23 +154,24 @@ def fetch_cmd(cfg, parser, parsed, args):
         youtube_embed = None
 
     out('Scraping {0}...'.format(url))
-    video_feed = vidscraper.auto_feed(url)
-    video_feed.load()
+    videos = fetch_videos_from_url(url, youtube_embed)
 
-    print 'Found {0} videos...'.format(video_feed.video_count)
-    for i, video in enumerate(video_feed):
-        filename = generate_filename(video.title or '')
+    print 'Found {0} videos...'.format(len(videos))
+    for i, video in enumerate(videos):
+        if video['source_url'] in source_map and not parsed.force:
+            print 'Skipping {0}... already exists.'.format(
+                stringify(video['title']))
+            continue
+
+        filename = generate_filename(video['title'])
         filename = '{index:04d}_{basename}.json'.format(
             index=i, basename=filename[:40])
 
         print 'Working on {0}... ({1})'.format(
-            unicodedata.normalize('NFKD', video.title).encode(
-                'ascii', 'ignore'),
-            filename)
-        item = vidscraper_to_dict(video, youtube_embed=youtube_embed)
+            stringify(video['title']), filename)
 
         f = open(os.path.join('json', filename), 'w')
-        f.write(convert_to_json(item))
+        f.write(convert_to_json(video))
         f.close()
 
         # TODO: what if there's a file there already? on the first one,
@@ -317,8 +326,6 @@ def push_cmd(cfg, parser, parsed, args):
     #
     # Go through and make sure there aren't any problems with
     # categories.
-
-    api = steve.restapi.API(api_url)
 
     all_categories = dict(
         [(cat['title'], cat)
@@ -530,6 +537,11 @@ def main(argv):
 
     fetch_parser = subparsers.add_parser(
         'fetch', help='fetches all the videos and generates .json files')
+    fetch_parser.add_argument(
+        '--force',
+        action='store_true',
+        default=False,
+        help='forces steve to stomp on existing files')
     fetch_parser.set_defaults(func=fetch_cmd)
 
     status_parser = subparsers.add_parser(

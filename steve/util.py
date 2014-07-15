@@ -14,6 +14,7 @@ import os
 import string
 import sys
 import textwrap
+import unicodedata
 from functools import wraps
 from urlparse import urlparse
 
@@ -309,6 +310,24 @@ def vidscraper_to_dict(video, youtube_embed=None):
     return item
 
 
+def fetch_videos_from_url(url, youtube_embed=None):
+    """Fetches video data from given url and returns array of dicts
+
+    :arg url: The url to fetch data from
+
+    :returns: list of richard-ish dicts
+
+    Example:
+
+    >>> fetch_videos_from_url('http://www.youtube.com/user/PyConDE/videos')
+    [...]
+
+    """
+    video_feed = vidscraper.auto_feed(url)
+    video_feed.load()
+    return [vidscraper_to_dict(vid, youtube_embed) for vid in video_feed]
+
+
 def get_video_requirements():
     fn = os.path.join(os.path.dirname(__file__), 'video_reqs.json')
     fp = open(fn)
@@ -471,7 +490,7 @@ def err(*output, **kw):
 
 def stringify(blob):
     if isinstance(blob, unicode):
-        return blob.encode('ascii', 'ignore')
+        return unicodedata.normalize('NFKD', blob).encode('ascii', 'ignore')
     return str(blob)
 
 

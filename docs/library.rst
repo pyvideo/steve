@@ -45,6 +45,8 @@ steve.util
 
    .. autofunction:: scrapevideo(video_url)
 
+   .. autofunction:: fetch_videos_from_url(url, youtube_embed)
+
    .. autofunction:: verify_video_data(data)
 
    .. autofunction:: verify_json_files(json_files)
