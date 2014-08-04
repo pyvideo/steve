@@ -10,6 +10,10 @@ from steve import restapi
 from steve.util import SteveException, verify_video_data
 
 
+STATE_LIVE = 1
+STATE_DRAFT = 2
+
+
 class MissingRequiredData(SteveException):
     """Denotes that data passed in is missing keys
 
@@ -113,7 +117,7 @@ def create_video(api_url, auth_token, video_data):
 
         import datetime
 
-        from steve.util import create_video, MissingRequiredData
+        from steve.util import STATE_LIVE, create_video, MissingRequiredData
 
         try:
             video = create_video(
@@ -121,7 +125,7 @@ def create_video(api_url, auth_token, video_data):
                 auth_token='ou812authkey',
                 video_data={
                     'category': 'Test Category',
-                    'state': 1,
+                    'state': STATE_LIVE,
                     'title': 'Test video title',
                     'speakers': ['Jimmy Discotheque'],
                     'language': 'English',
@@ -193,7 +197,7 @@ def update_video(api_url, auth_token, video_id, video_data):
 
         import datetime
 
-        from steve.util import update_video, MissingRequiredData
+        from steve.util import STATE_LIVE, update_video, MissingRequiredData
 
         try:
             video = update_video(
@@ -203,7 +207,7 @@ def update_video(api_url, auth_token, video_id, video_data):
                 video_data={
                     'id': 1101,
                     'category': 'Test Category',
-                    'state': 1,
+                    'state': STATE_LIVE,
                     'title': 'Test video title',
                     'speakers': ['Jimmy Discotheque'],
                     'language': 'English',
