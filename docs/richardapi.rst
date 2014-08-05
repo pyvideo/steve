@@ -30,7 +30,8 @@ steve.richardapi
 
    .. autofunction:: get_category(api_url, title)
 
+   .. autofunction:: get_video(api_url, auth_token, video_id)
+
    .. autofunction:: create_video(api_url, auth_token, video_data)
 
    .. autofunction:: update_video(api_url, auth_token, video_id, video_data)
-

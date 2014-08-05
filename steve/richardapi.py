@@ -91,6 +91,23 @@ def get_category(api_url, title):
     raise DoesNotExist('category "{0}" does not exist'.format(title))
 
 
+def get_video(api_url, auth_token, video_id):
+    """Gets information for specified video
+
+    :arg api_url: URL for the api
+    :arg auth_token: auth token
+    :arg video_id: The id for the video
+
+    :returns: video data
+
+    :raises steve.richardapi.DoesNotExist: if the video doesn't
+        exist
+
+    """
+    api = restapi.API(api_url)
+    return restapi.get_content(api.video(video_id).get(auth_token=auth_token))
+
+
 def create_video(api_url, auth_token, video_data):
     """Creates a video on the site
 
