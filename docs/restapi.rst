@@ -44,19 +44,19 @@ The gist of it is this:
 
    .. code-block:: python
 
-      # Get all videos
-      all_videos = api.video.get()
+      # Get all Foos
+      all_foos = api.foo.get()
 
-      # Get video with id 1
-      video_1 = get_content(api.video(1).get())
+      # Get foo with id 1
+      foo_1 = get_content(api.foo(1).get())
 
       # Change the data, then put it
-      video_1['somekey'] = 'newvalue'
-      api.video(1).put(data=video_1)
+      foo_1['somekey'] = 'newvalue'
+      api.foo(1).put(data=foo_1)
 
-      # Create a new video. This does a POST and if there's
+      # Create a new foo. This does a POST and if there's
       # a 201, it'll return the results of that.
-      newvideo = get_content(api.video.post(data={'somekey': 'newvalue'}))
+      newfoo = get_content(api.foo.post(data={'somekey': 'newvalue'}))
 
 That's pretty much it!
 
