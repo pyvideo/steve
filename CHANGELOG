@@ -2,6 +2,16 @@
  ChangeLog
 ===========
 
+version 0.4 -- August 5th, 2014
+===============================
+
+**Changes**
+
+* **added steve.richardapi.get_video**
+* **Tweaks to webedit to make it a little easier to use**
+* **added steve.utils.fetch_videos_from_url**
+
+
 version 0.3 -- March 17th, 2014
 ===============================
 
