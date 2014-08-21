@@ -162,7 +162,7 @@ def create_video(api_url, auth_token, video_data):
        Check the richard project in the video app at ``models.py`` for
        up-to-date list of fields and their types.
 
-       https://github.com/willkg/richard/blob/master/richard/videos/models.py
+       https://github.com/pyvideo/richard/blob/master/richard/videos/models.py
 
     """
     errors = verify_video_data(video_data)
@@ -244,7 +244,7 @@ def update_video(api_url, auth_token, video_id, video_data):
        Check the richard project in the video app at ``models.py`` for
        up-to-date list of fields and their types.
 
-       https://github.com/willkg/richard/blob/master/richard/videos/models.py
+       https://github.com/pyvideo/richard/blob/master/richard/videos/models.py
 
     """
     # If you do a create_video, then update that data and do an

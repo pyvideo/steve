@@ -2,12 +2,12 @@
  About steve
 =============
 
-`richard <https://github.com/willkg/richard>`_ is a video index
+`richard <https://github.com/pyvideo/richard>`_ is a video index
 site. It has a very basic admin interface for adding videos by hand
 one-by-one. This gets very tedious when adding all the videos for a
 conference.
 
-`steve <https://github.com/willkg/steve>`_ is a command line utility
+`steve <https://github.com/pyvideo/steve>`_ is a command line utility
 for downloading information for a conference, downloading all the
 metadata for the videos, and making it easier to transform the data,
 fix it and make it better. Then steve grew into a library of functions

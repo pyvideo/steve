@@ -6,7 +6,7 @@
 
 steve is a command line interface and Python library to make it easier
 and funner to add collections of videos to a `richard
-<https://github.com/willkg/richard>`_ instance than using the Django
+<https://github.com/pyvideo/richard>`_ instance than using the Django
 admin.
 
 Wait, wut?

@@ -17,7 +17,7 @@ changes like this:
 
 1. create a branch based on master to hold your changes
 2. make your changes in that branch and commit them
-3. create a pull request between willkg/master and your branch with
+3. create a pull request between pyvideo/master and your branch with
    all the details you think I'll need to know to understand what you
    did, why, and what problem you were trying to solve
 

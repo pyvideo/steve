@@ -29,18 +29,18 @@ pip and git urls:
 
     Install like this:
 
-    1. ``pip install git+https://github.com/willkg/steve.git``
+    1. ``pip install git+https://github.com/pyvideo/steve.git``
 
     Update like this:
 
-    1. ``pip install -U git+https://github.com/willkg/steve.git``
+    1. ``pip install -U git+https://github.com/pyvideo/steve.git``
 
 
 git clone and installing from that:
 
     Install like this:
 
-    1. ``git clone git://github.com/willkg/steve.git``
+    1. ``git clone git://github.com/pyvideo/steve.git``
     2. ``cd steve``
     3. ``python setup.py develop``
 
@@ -57,7 +57,7 @@ Installing a Bleeding edge for hacking purposes
 If you want to install steve in a way that makes it easy to hack on,
 do this:
 
-1. ``git clone git://github.com/willkg/steve.git``
+1. ``git clone git://github.com/pyvideo/steve.git``
 2. ``cd steve``
 3. ``virtualenv ./venv/``
 4. ``./venv/bin/python setup.py develop``
