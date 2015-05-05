@@ -19,23 +19,6 @@ from functools import wraps
 from urlparse import urlparse
 
 import html2text
-import vidscraper
-
-
-YOUTUBE_EMBED = {
-    'object': (
-        '<object width="640" height="390"><param name="movie" '
-        'value="http://youtube.com/v/{guid}?version=3&amp;hl=en_US"></param>'
-        '<param name="allowFullScreen" value="true"></param>'
-        '<param name="allowscriptaccess" value="always"></param>'
-        '<embed src="http://youtube.com/v/{guid}?version=3&amp;hl=en_US" '
-        'type="application/x-shockwave-flash" width="640" '
-        'height="390" allowscriptaccess="always" '
-        'allowfullscreen="true"></embed></object>'),
-    'iframe': (
-        '<iframe id="player" width="640" height="390" frameborder="0" '
-        'src="http://youtube.com/v/{guid}"></iframe>')
-    }
 
 
 def is_youtube(url):
@@ -238,79 +221,7 @@ def generate_filename(text):
     return filename
 
 
-def vidscraper_to_dict(video, youtube_embed=None):
-    """Converts vidscraper Video to a python dict
-
-    :arg video: vidscraper Video
-    :arg youtube_embed: the embed code to use for YouTube videos or
-        "object" or "iframe"
-
-    :returns: dict
-
-    """
-    item = {}
-
-    item['state'] = 2  # STATE_DRAFT
-    item['whiteboard'] = u'needs editing'
-
-    item['title'] = video.title
-    item['summary'] = video.description
-    item['description'] = u''
-    item['quality_notes'] = u''
-    item['slug'] = u''
-    item['source_url'] = video.link
-    item['copyright_text'] = video.license
-
-    item['tags'] = video.tags
-    item['speakers'] = []
-
-    item['recorded'] = video.publish_datetime
-    item['language'] = u'English'
-
-    item['thumbnail_url'] = video.thumbnail_url
-
-    if video.files:
-        for f in video.files:
-            if f.mime_type in ('video/ogg', 'video/ogv'):
-                item['video_ogv_length'] = f.length
-                item['video_ogv_url'] = f.url
-                item['video_ogv_download_only'] = False
-            elif f.mime_type == 'video/mp4':
-                item['video_mp4_length'] = f.length
-                item['video_mp4_url'] = f.url
-                item['video_mp4_download_only'] = False
-            elif f.mime_type == 'video/webm':
-                item['video_webm_length'] = f.length
-                item['video_webm_url'] = f.url
-                item['video_webm_download_only'] = False
-            elif f.mime_type == 'video/x-flv':
-                item['video_flv_length'] = f.length
-                item['video_flv_url'] = f.url
-                item['video_flv_download_only'] = False
-            else:
-                print 'No clue what to do with {0}'.format(f.mime_type)
-                # raise ValueError(
-                #     'No clue what to do with {0}'.format(f.mime_type))
-
-    item['embed'] = video.embed_code
-
-    if (youtube_embed is not None
-        and video.link
-        and is_youtube(video.link)
-        and hasattr(video, 'guid')):
-
-        if youtube_embed in YOUTUBE_EMBED:
-            youtube_embed = YOUTUBE_EMBED[youtube_embed]
-
-        guid = video.guid
-        if guid:
-            guid = video.guid.split('/')[-1]
-            item['embed'] = youtube_embed.format(guid=guid)
-
-    return item
-
-
-def fetch_videos_from_url(url, youtube_embed=None):
+def fetch_videos_from_url(url):
     """Fetches video data from given url and returns array of dicts
 
     :arg url: The url to fetch data from
@@ -323,9 +234,8 @@ def fetch_videos_from_url(url, youtube_embed=None):
     [...]
 
     """
-    video_feed = vidscraper.auto_feed(url)
-    video_feed.load()
-    return [vidscraper_to_dict(vid, youtube_embed) for vid in video_feed]
+    # FIXME: reimplement
+    raise NotImplementedError
 
 
 def get_video_requirements():
@@ -593,17 +503,10 @@ def save_json_file(config, filename, contents, **kw):
     fp.close()
 
 
-def scrapevideo(video_url, richard=False, youtube_embed=None):
+def scrapevideo(video_url):
     """Scrapes the url and fixes the data
 
-    This is sort of a wrapper around `vidscraper.auto_scrape`. It
-    calls that, but then transforms the results into a Python dict and
-    adds some additional computed metadata.
-
     :arg video_url: Url of video to scrape.
-    :arg richard: True if you want richard data, False if you want
-        vidscraper data
-    :arg youtube_embed: The embed type for if this is a YouTube video
 
     :returns: Python dict of metadata
 
@@ -613,25 +516,8 @@ def scrapevideo(video_url, richard=False, youtube_embed=None):
     {'url': 'http://www.youtube.com/watch?v=ywToByBkOTc', ...}
 
     """
-    video_data = vidscraper.auto_scrape(video_url)
-    if richard:
-        return vidscraper_to_dict(video_data, youtube_embed)
-
-    data = dict([(field, getattr(video_data, field))
-                 for field in video_data.fields])
-
-    for field in ('publish_datetime', 'file_url_expires'):
-        dt = data.get(field, None)
-        if isinstance(dt, datetime.datetime):
-            data[field] = dt.isoformat()
-
-    data['url'] = video_url
-    if is_youtube(video_url) and 'guid' in data and data['guid']:
-        guid = data['guid'].split('/')[-1]
-        data['object_embed_code'] = YOUTUBE_EMBED['object'].format(guid=guid)
-        data['iframe_embed_code'] = YOUTUBE_EMBED['iframe'].format(guid=guid)
-
-    return data
+    # FIXME: reimplement
+    raise NotImplementedError
 
 
 def html_to_markdown(text):

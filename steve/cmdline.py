@@ -14,7 +14,6 @@ import unicodedata
 
 import argparse
 import blessings
-import vidscraper
 
 try:
     import steve
@@ -28,7 +27,6 @@ import steve.richardapi
 from steve.util import (
     BetterArgumentParser,
     ConfigNotFound,
-    YOUTUBE_EMBED,
     convert_to_json,
     err,
     fetch_videos_from_url,
@@ -42,7 +40,6 @@ from steve.util import (
     scrapevideo,
     stringify,
     verify_json_files,
-    vidscraper_to_dict,
     with_config,
     wrap_paragraphs,
 )
@@ -67,11 +64,6 @@ category =
 # The url for where all the videos are listed.
 # e.g. url = http://www.youtube.com/user/PythonItalia/videos
 url =
-
-# If the url is a YouTube-based url, you can either have 'object'
-# based embed code or 'iframe' based embed code. Specify that
-# here.
-# youtube_embed = object
 
 # The url for the richard instance api.
 # e.g. url = http://example.com/api/v1/
@@ -144,17 +136,8 @@ def fetch_cmd(cfg, parser, parsed, args):
         err('Add "url = ..." to [project] section of steve.ini file.')
         return 1
 
-    if 'youtube' in url:
-        try:
-            youtube_embed = YOUTUBE_EMBED[cfg.get('project', 'youtube_embed')]
-        except KeyError:
-            err('youtube_embed must be either "iframe" or "object".')
-            return 1
-    else:
-        youtube_embed = None
-
     out('Scraping {0}...'.format(url))
-    videos = fetch_videos_from_url(url, youtube_embed)
+    videos = fetch_videos_from_url(url)
 
     print 'Found {0} videos...'.format(len(videos))
     for i, video in enumerate(videos):

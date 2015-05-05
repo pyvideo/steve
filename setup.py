@@ -47,7 +47,6 @@ setup(
         'html2text',
         'jinja2',
         'nose',
-        'vidscraper',
         ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
