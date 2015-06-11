@@ -47,6 +47,7 @@ setup(
         'html2text',
         'jinja2',
         'nose',
+        'youtube-dl',
         ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',

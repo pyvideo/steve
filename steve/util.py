@@ -221,23 +221,6 @@ def generate_filename(text):
     return filename
 
 
-def fetch_videos_from_url(url):
-    """Fetches video data from given url and returns array of dicts
-
-    :arg url: The url to fetch data from
-
-    :returns: list of richard-ish dicts
-
-    Example:
-
-    >>> fetch_videos_from_url('http://www.youtube.com/user/PyConDE/videos')
-    [...]
-
-    """
-    # FIXME: reimplement
-    raise NotImplementedError
-
-
 def get_video_requirements():
     fn = os.path.join(os.path.dirname(__file__), 'video_reqs.json')
     fp = open(fn)
@@ -501,6 +484,23 @@ def save_json_file(config, filename, contents, **kw):
     fp = open(filename, 'w')
     json.dump(contents, fp, **kw)
     fp.close()
+
+
+def scrape_videos(url):
+    """Scrapes a url for video data. Returns list of dicts.
+
+    :arg url: The url to fetch data from
+
+    :returns: list of dicts
+
+    >>> scrape_videos('https://www.youtube.com/user/PyConDE/videos')
+    [...]
+
+    """
+    # FIXME: generate list of available scrapers.
+    # FIXME: run url through all available scrapers.
+    from steve.scrapers import YoutubeScraper
+    return YoutubeScraper().scrape(url)
 
 
 def scrapevideo(video_url):

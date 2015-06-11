@@ -29,7 +29,6 @@ from steve.util import (
     ConfigNotFound,
     convert_to_json,
     err,
-    fetch_videos_from_url,
     generate_filename,
     get_from_config,
     get_project_config,
@@ -38,6 +37,7 @@ from steve.util import (
     save_json_file,
     save_json_files,
     scrapevideo,
+    scrape_videos,
     stringify,
     verify_json_files,
     with_config,
@@ -137,7 +137,7 @@ def fetch_cmd(cfg, parser, parsed, args):
         return 1
 
     out('Scraping {0}...'.format(url))
-    videos = fetch_videos_from_url(url)
+    videos = scrape_videos(url)
 
     print 'Found {0} videos...'.format(len(videos))
     for i, video in enumerate(videos):
