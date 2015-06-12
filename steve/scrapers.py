@@ -12,6 +12,10 @@ import json
 import subprocess
 
 
+class ScraperError(Exception):
+    pass
+
+
 class Scraper(object):
     def scrape(self, url):
         """Takes a url and returns list of dicts or None if not handled"""
@@ -41,15 +45,22 @@ class YoutubeScraper(object):
         }
 
     def scrape(self, url):
+        """Scrapes a url by passing it through youtube-dl"""
         parts = urlparse(url)
         # FIXME: This is a lousy test for whether this is a youtube
         # url.
         if not parts.netloc.endswith('youtube.com'):
             return
 
-        # FIXME: hardcoded path for youtube-dl command.
-        # FIXME: needs better error handling.
-        output = subprocess.check_output(['youtube-dl', '-j', url])
+        try:
+            output = subprocess.check_output(
+                ['youtube-dl', '-j', url],
+                stderr=subprocess.STDOUT
+            )
+        except subprocess.CalledProcessError as cpe:
+            raise ScraperError('youtube-dl said "{0}".'.format(cpe.output))
+        except OSError:
+            raise ScraperError('youtube-dl not installed or not on PATH.')
 
         # Each line is a single JSON object.
         items = []
