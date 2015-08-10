@@ -503,7 +503,7 @@ def scrape_videos(url):
     return YoutubeScraper().scrape(url)
 
 
-def scrapevideo(video_url):
+def scrape_video(video_url):
     """Scrapes the url and fixes the data
 
     :arg video_url: Url of video to scrape.
@@ -518,8 +518,6 @@ def scrapevideo(video_url):
     """
     # FIXME: reimplement
     raise NotImplementedError
-
-
 
 
 def html_to_markdown(text):

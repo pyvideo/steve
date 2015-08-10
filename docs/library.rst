@@ -43,13 +43,15 @@ steve.util
 
    .. autofunction:: save_json_file(config, filename, contents, **kw)
 
-   .. autofunction:: scrapevideo(video_url)
+   .. autofunction:: scrape_videos(url)
 
-   .. autofunction:: fetch_videos_from_url(url, youtube_embed)
+   .. autofunction:: scrape_video(video_url)
 
    .. autofunction:: verify_video_data(data)
 
    .. autofunction:: verify_json_files(json_files)
+
+   .. autofunction:: get_video_id(richard_url)
 
 
 Recipes
