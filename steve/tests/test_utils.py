@@ -6,12 +6,17 @@
 # license.
 #######################################################################
 
-import datetime
 from unittest import TestCase
 
 from nose.tools import eq_
 
-from steve.util import html_to_markdown, is_youtube, verify_video_data
+from steve.util import (
+    get_video_id,
+    html_to_markdown,
+    is_youtube,
+    SteveException,
+    verify_video_data,
+)
 
 
 class TestVerifyVideoData(TestCase):
@@ -131,3 +136,32 @@ def test_is_youtube():
 
     for url, expected in data:
         eq_(is_youtube(url), expected)
+
+
+def test_get_video_id():
+    # Test valid urls
+    data = [
+        # url, expected
+        ('http://pyvideo.org/video/2822', 2822),
+        ('http://pyvideo.org/video/2822/', 2822),
+        ('http://pyvideo.org/video/2822/foo-bar-baz', 2822),
+        ('https://pyvideo.org/video/2822/foo-bar-baz', 2822),
+        ('https://richard.example.com/video/2822/foo-bar-baz', 2822),
+    ]
+
+    for url, expected in data:
+        eq_(get_video_id(url), expected)
+
+    # Test invalid urls
+    data = [
+        None,
+        'foo',
+        'http://pyvideo.org/',
+        'http://pyvideo.org/video/foo'
+    ]
+    for url in data:
+        try:
+            get_video_id(url)
+            assert False
+        except SteveException:
+            pass
