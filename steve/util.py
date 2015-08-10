@@ -520,6 +520,8 @@ def scrapevideo(video_url):
     raise NotImplementedError
 
 
+
+
 def html_to_markdown(text):
     """Converts an HTML string to equivalent Markdown
 
@@ -534,3 +536,29 @@ def html_to_markdown(text):
 
     """
     return html2text.html2text(text).strip()
+
+
+def get_video_id(richard_url):
+    """Given a richard url for a video, returns the video id as an int
+
+    :arg richard_url: url for a video on a richard instance
+
+    :returns: video id as an integer
+
+    :throws SteveException: if it has problems parsing the video id
+        out of the url
+
+    Example:
+
+    >>> get_video_id("http://pyvideo.org/video/2822/make-api-calls")
+    2822
+    >>> get_video_id('foo')
+    Traceback (most recent call last):
+      File ...
+    SteveException: could not parse out video id
+
+    """
+    try:
+        return int(richard_url.split('/video/')[1].split('/')[0])
+    except (AttributeError, IndexError, ValueError):
+        raise SteveException('Could not parse video id')
