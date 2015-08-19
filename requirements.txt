@@ -8,7 +8,7 @@ feedparser
 html2text
 httplib2
 lxml
-nose
 pyquery
 requests
 wsgiref
+pytest

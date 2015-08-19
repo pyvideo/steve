@@ -8,8 +8,6 @@
 
 from unittest import TestCase
 
-from nose.tools import eq_
-
 from steve.restapi import urljoin
 
 
@@ -29,4 +27,4 @@ class UrlJoinTestCase(TestCase):
              'http://localhost/path1?foo=bar'),
             ]:
 
-            eq_(urljoin(base, *args), expected)
+            assert urljoin(base, *args) == expected

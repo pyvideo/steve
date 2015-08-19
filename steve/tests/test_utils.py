@@ -8,8 +8,6 @@
 
 from unittest import TestCase
 
-from nose.tools import eq_
-
 from steve.util import (
     get_video_id,
     html_to_markdown,
@@ -32,27 +30,27 @@ class TestVerifyVideoData(TestCase):
 
         data = dict(self.default)
 
-        eq_(len(verify_video_data(data)), 0)
+        assert len(verify_video_data(data)) == 0
 
     def test_category(self):
         """Test category variations"""
         # category is none, no data['category']
         data = dict(self.default)
         del data['category']
-        eq_(len(verify_video_data(data, None)), 1)
+        assert len(verify_video_data(data, None)) == 1
 
         # category is something, no data['category']
-        eq_(len(verify_video_data(data, 'Test Category')), 0)
+        assert len(verify_video_data(data, 'Test Category')) == 0
 
         # category is none, data['category'] = something
         data = dict(self.default)
-        eq_(len(verify_video_data(data, None)), 0)
+        assert len(verify_video_data(data, None)) == 0
 
         # category is something, data['category'] = same something
-        eq_(len(verify_video_data(data, data['category'])), 0)
+        assert len(verify_video_data(data, data['category'])) == 0
 
         # category is something, data['category'] = different something
-        eq_(len(verify_video_data(data, data['category'] + 'abc')), 1)
+        assert len(verify_video_data(data, data['category'] + 'abc')) == 1
 
     def test_minimum_requirements(self):
         """Tests verifying required fields"""
@@ -60,18 +58,18 @@ class TestVerifyVideoData(TestCase):
 
         data = dict(self.default)
         del data['title']
-        eq_(len(verify_video_data(data)), 1)
+        assert len(verify_video_data(data)) == 1
 
         data = dict(self.default)
         del data['category']
-        eq_(len(verify_video_data(data)), 1)
+        assert len(verify_video_data(data)) == 1
 
         data = dict(self.default)
         del data['language']
-        eq_(len(verify_video_data(data)), 1)
+        assert len(verify_video_data(data)) == 1
 
         # Three errors if we pass in an empty dict
-        eq_(len(verify_video_data({})), 3)
+        assert len(verify_video_data({})) == 3
 
     def test_speakers(self):
         """Tests speakers which is a TextArrayField"""
@@ -80,13 +78,13 @@ class TestVerifyVideoData(TestCase):
         data = dict(self.default)
 
         data['speakers'] = []
-        eq_(len(verify_video_data(data)), 0)
+        assert len(verify_video_data(data)) == 0
 
         data['speakers'] = ['']
-        eq_(len(verify_video_data(data)), 1)
+        assert len(verify_video_data(data)) == 1
 
         data['speakers'] = ['Jimmy Discotheque']
-        eq_(len(verify_video_data(data)), 0)
+        assert len(verify_video_data(data)) == 0
 
     def test_state(self):
         """Test verifying state (IntegerField with choices)"""
@@ -95,16 +93,16 @@ class TestVerifyVideoData(TestCase):
         data = dict(self.default)
 
         data['state'] = 0
-        eq_(len(verify_video_data(data)), 1)
+        assert len(verify_video_data(data)) == 1
 
         data['state'] = 1
-        eq_(len(verify_video_data(data)), 0)
+        assert len(verify_video_data(data)) == 0
 
         data['state'] = 2
-        eq_(len(verify_video_data(data)), 0)
+        assert len(verify_video_data(data)) == 0
 
         data['state'] = 3
-        eq_(len(verify_video_data(data)), 1)
+        assert len(verify_video_data(data)) == 1
 
     def test_video_ogv_download_only(self):
         """Test BooleanField"""
@@ -113,19 +111,21 @@ class TestVerifyVideoData(TestCase):
         data = dict(self.default)
 
         data['video_ogv_download_only'] = True
-        eq_(len(verify_video_data(data)), 0)
+        assert len(verify_video_data(data)) == 0
 
         data['video_ogv_download_only'] = False
-        eq_(len(verify_video_data(data)), 0)
+        assert len(verify_video_data(data)) == 0
 
         data['video_ogv_download_only'] = 'True'
-        eq_(len(verify_video_data(data)), 1)
+        assert len(verify_video_data(data)) == 1
 
 
 def test_html_to_markdown():
     """Test html_to_markdown"""
-    eq_(html_to_markdown('<p>this is <b>html</b>!</p>'),
-        u'this is **html**!')
+    assert (
+        html_to_markdown('<p>this is <b>html</b>!</p>') ==
+        u'this is **html**!'
+    )
 
 
 def test_is_youtube():
@@ -135,7 +135,7 @@ def test_is_youtube():
     ]
 
     for url, expected in data:
-        eq_(is_youtube(url), expected)
+        assert is_youtube(url) == expected
 
 
 def test_get_video_id():
@@ -150,7 +150,7 @@ def test_get_video_id():
     ]
 
     for url, expected in data:
-        eq_(get_video_id(url), expected)
+        assert get_video_id(url) == expected
 
     # Test invalid urls
     data = [

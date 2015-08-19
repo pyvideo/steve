@@ -46,7 +46,7 @@ setup(
         'cssselect',
         'html2text',
         'jinja2',
-        'nose',
+        'pytest',
         'youtube-dl',
         ],
     classifiers=[

@@ -53,25 +53,14 @@ Generally speaking:
 Running and writing tests
 =========================
 
-steve comes with unit tests.  Unit tests are executed using `nose`_.
-If you don't already have nose installed, then install it with::
+steve comes with unit tests.  Unit tests are executed using `pytest`_.
+If you don't already have pytest installed, then install it with::
 
-    pip install nose
-
-I like to use `nose-progressive`_, too, because it's awesome.  To
-install that::
-
-    pip install nose-progressive
+    pip install pytest
 
 To run the unit tests from a git clone or the source tarball, do this
 from the project directory::
 
-    nosetests
+    py.test
 
-With nose-progressive and fail-fast::
-
-    nosetests -x --with-progressive
-
-
-.. _nose-progressive: http://pypi.python.org/pypi/nose-progressive/
-.. _nose: http://code.google.com/p/python-nose/
+.. _pytest: http://pytest.org/latest/
