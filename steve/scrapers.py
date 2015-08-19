@@ -29,7 +29,7 @@ class YoutubeScraper(object):
             'title': item['fulltitle'],
             'summary': item['description'],
             'description': '',
-            'state': 1,
+            'state': 2,  # Draft
             'category': '',
             'quality_notes': '',
             'language': '',
