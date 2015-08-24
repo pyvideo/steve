@@ -17,7 +17,7 @@ from steve.util import (
 )
 
 
-class TestVerifyVideoData(TestCase):
+class VerifyVideoDataTestCase(TestCase):
     default = {
         'title': 'Foo',
         'category': 'Test Category',
