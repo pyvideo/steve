@@ -89,7 +89,7 @@
     "md": false, 
     "choices": [], 
     "null": true, 
-    "type": "CharField", 
+    "type": "URLField",
     "empty_strings": true
   }, 
   {
@@ -116,7 +116,7 @@
     "md": false, 
     "choices": [], 
     "null": true, 
-    "type": "CharField", 
+    "type": "URLField",
     "empty_strings": true
   }, 
   {
@@ -143,7 +143,7 @@
     "md": false, 
     "choices": [], 
     "null": true, 
-    "type": "CharField", 
+    "type": "URLField",
     "empty_strings": true
   }, 
   {
@@ -170,7 +170,7 @@
     "md": false, 
     "choices": [], 
     "null": true, 
-    "type": "CharField", 
+    "type": "URLField",
     "empty_strings": true
   }, 
   {
@@ -197,7 +197,7 @@
     "md": false, 
     "choices": [], 
     "null": true, 
-    "type": "CharField", 
+    "type": "URLField",
     "empty_strings": true
   }, 
   {
@@ -215,7 +215,7 @@
     "md": false, 
     "choices": [], 
     "null": true, 
-    "type": "CharField", 
+    "type": "URLField",
     "empty_strings": true
   }, 
   {

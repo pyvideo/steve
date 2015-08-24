@@ -80,6 +80,9 @@
         {% elif field.type == 'TextArrayField' %}
           <div><textarea name="{{ field.name }}" cols=60 rows=4>{{ field.value|join('\n') }}</textarea></div>
           <div class="helptext">List of items, one per line</div>
+        {% elif field.type == 'URLField' %}
+          <div><input type="text" name="{{ field.name }}" value="{{ field.value }}"></div>
+          <div class="helptext"><a href="{{ field.value }}" target="_blank">{{ field.value }}</a></div>
         {% else %}
           <div>{{ field.value }}</div>
         {% endif %}
