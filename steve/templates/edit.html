@@ -81,8 +81,8 @@
           <div><textarea name="{{ field.name }}" cols=60 rows=4>{{ field.value|join('\n') }}</textarea></div>
           <div class="helptext">List of items, one per line</div>
         {% elif field.type == 'URLField' %}
-          <div><input type="text" name="{{ field.name }}" value="{{ field.value }}"></div>
-          <div class="helptext"><a href="{{ field.value }}" target="_blank">{{ field.value }}</a></div>
+          <div><input class="urlfield" id="{{ field.name }}-input" type="text" name="{{ field.name }}" value="{{ field.value }}"></div>
+          <div class="helptext"><a id="{{ field.name }}-link" href="{{ field.value }}" target="_blank">{{ field.value }}</a></div>
         {% else %}
           <div>{{ field.value }}</div>
         {% endif %}
@@ -99,3 +99,18 @@
 </table>
 </form>
 {% endblock %}
+
+{% block js %}
+  <script>
+   (function($, document) {
+     $(document).ready(function() {
+       // Update url links when the value changes
+       $('.urlfield').change(function() {
+         var name = $(this).attr('name') + '-link';
+         $('#' + name).attr('href', $(this).val());
+         $('#' + name).text($(this).val());
+       });
+     });
+   })(jQuery, window.document);
+  </script>
+{% endblock js %}
