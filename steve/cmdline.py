@@ -7,10 +7,8 @@
 #######################################################################
 
 import ConfigParser
-import json
 import os
 import sys
-import unicodedata
 
 import argparse
 import blessings
@@ -36,7 +34,7 @@ from steve.util import (
     out,
     save_json_file,
     save_json_files,
-    scrapevideo,
+    scrape_video,
     scrape_videos,
     stringify,
     verify_json_files,
@@ -241,7 +239,7 @@ def scrapevideo_cmd(parser, parsed, args):
         parser.print_byline()
 
     video_url = parsed.video[0]
-    data = scrapevideo(video_url, parsed.richard, 'object')
+    data = scrape_video(video_url, parsed.richard, 'object')
     if parsed.save:
         cfg = get_project_config()
 
