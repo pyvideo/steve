@@ -1,10 +1,8 @@
 -e .
 
+# Development requirements
 Sphinx
-argparse
-blessings
-html2text
-requests
+click
 flake8
 pytest
 tox

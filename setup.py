@@ -6,9 +6,9 @@
 # license.
 #######################################################################
 
-from setuptools import setup, find_packages
-import re
+from setuptools import find_packages, setup
 import os
+import re
 
 
 READMEFILE = 'README.rst'
@@ -39,16 +39,19 @@ setup(
     zip_safe=True,
     packages=find_packages(),
     include_package_data=True,
-    scripts=['scripts/steve-cmd'],
     install_requires=[
-        'argparse',
-        'blessings',
+        'click',
         'html2text',
         'jinja2',
         'requests',
         'pytest',
+        'tabulate',
         'youtube-dl',
-        ],
+    ],
+    entry_points="""
+        [console_scripts]
+        steve-cmd=steve.cmdline:click_run
+    """,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',

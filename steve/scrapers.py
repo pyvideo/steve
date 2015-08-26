@@ -6,10 +6,11 @@
 # license.
 #######################################################################
 
-from datetime import datetime
-from urlparse import urlparse
 import json
 import subprocess
+from datetime import datetime
+
+from steve.util import is_youtube
 
 
 class ScraperError(Exception):
@@ -46,12 +47,11 @@ class YoutubeScraper(object):
 
     def scrape(self, url):
         """Scrapes a url by passing it through youtube-dl"""
-        parts = urlparse(url)
-        # FIXME: This is a lousy test for whether this is a youtube
-        # url.
-        if not parts.netloc.endswith('youtube.com'):
+        if not is_youtube(url):
             return
 
+        # FIXME: Sometimes youtube-dl takes a *long* time to run. This
+        # needs to give indication of progress.
         try:
             output = subprocess.check_output(
                 ['youtube-dl', '-j', url],

@@ -6,7 +6,6 @@
 # license.
 #######################################################################
 
-import argparse
 import ConfigParser
 import datetime
 import json
@@ -40,25 +39,6 @@ class SteveException(Exception):
 class ConfigNotFound(SteveException):
     """Denotes the config file couldn't be found"""
     pass
-
-
-class BetterArgumentParser(argparse.ArgumentParser):
-    def __init__(self, *args, **kw):
-        if 'byline' in kw:
-            self.byline = kw.pop('byline')
-        else:
-            self.byline = None
-        argparse.ArgumentParser.__init__(self, *args, **kw)
-
-    def print_byline(self, file=None):
-        if file is None:
-            file = sys.stdout
-        if self.byline:
-            self._print_message(self.byline + '\n', file)
-
-    def print_usage(self, file=None):
-        self.print_byline(file)
-        argparse.ArgumentParser.print_usage(self, file)
 
 
 def with_config(fun):
@@ -358,11 +338,6 @@ def wrap(text, indent=''):
     return (
         textwrap.TextWrapper(initial_indent=indent, subsequent_indent=indent)
         .wrap(text))
-
-
-def wrap_paragraphs(text):
-    text = ['\n'.join(textwrap.wrap(mem)) for mem in text.split('\n\n')]
-    return '\n\n'.join(text)
 
 
 def err(*output, **kw):

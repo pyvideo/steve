@@ -167,7 +167,7 @@ Example use
 
       For example, if you use vim::
 
-          steve-cmd status --list | xargs vim
+          steve-cmd status --aslist | xargs vim
 
       and edit them by hand one-by-one.
 
