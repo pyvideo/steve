@@ -43,9 +43,9 @@ setup(
     install_requires=[
         'argparse',
         'blessings',
-        'cssselect',
         'html2text',
         'jinja2',
+        'requests',
         'pytest',
         'youtube-dl',
         ],

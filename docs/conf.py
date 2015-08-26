@@ -245,26 +245,3 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
-
-
-# Mock out lxml because it's a C library and makes RTD sad.
-class Mock(object):
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def __call__(self, *args, **kwargs):
-        return Mock()
-
-    @classmethod
-    def __getattr__(cls, name):
-        if name in ('__file__', '__path__'):
-            return '/dev/null'
-        elif name[0] == name[0].upper():
-            return Mock()
-        else:
-            return Mock()
-
-
-MOCK_MODULES = ['lxml', 'lxml.html']
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = Mock()

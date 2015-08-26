@@ -18,7 +18,8 @@ import os
 
 try:
     import steve.cmdline
-except ImportError:
+except ImportError as ioe:
+    print ioe
     sys.stderr.write(
         'The steve library is not on your sys.path.  Please install steve.\n')
     sys.exit(1)

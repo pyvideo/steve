@@ -1,14 +1,8 @@
-BeautifulSoup
+-e .
+
 Sphinx
 argparse
-beautifulsoup4
 blessings
-cssselect
-feedparser
 html2text
-httplib2
-lxml
-pyquery
 requests
-wsgiref
 pytest
