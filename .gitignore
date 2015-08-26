@@ -3,3 +3,4 @@
 *~
 docs/_build
 steve.egg-info
+.tox
