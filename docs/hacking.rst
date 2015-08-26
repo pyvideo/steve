@@ -29,7 +29,13 @@ because these assumptions don't match you, please ask me on IRC.
 Code conventions
 ================
 
-PEP-8 and pyflakes is your friend.
+PEP-8 and pyflakes is your friend. We invoke them both using `flake8`_.
+
+To run flake8 on your code, do::
+
+    flake8
+
+.. _flake8: https://flake8.readthedocs.org/
 
 
 Documenting
@@ -63,4 +69,10 @@ from the project directory::
 
     py.test
 
-.. _pytest: http://pytest.org/latest/
+Also, we have `tox`_ which will run tests in multiple environments and
+also do a pep8/pyflakes pass. To run tox, do::
+
+    tox
+
+.. _pytest: http://pytest.org/
+.. _tox: http://tox.readthedocs.org/
