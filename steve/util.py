@@ -285,8 +285,8 @@ def verify_video_data(data, category=None):
 
         elif req['type'] == 'IntegerField':
             if not isinstance(data[key], int):
-                if (_required(req)
-                    or (not _required(req) and data[key] is not None)):
+                if ((_required(req)
+                     or (not _required(req) and data[key] is not None))):
 
                     errors.append('"{0}" field must be an int'.format(key))
             elif req['choices'] and data[key] not in req['choices']:

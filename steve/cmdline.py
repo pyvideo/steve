@@ -346,12 +346,12 @@ def push_cmd(cfg, parser, parsed, args):
             if this_cat is not None and str(this_cat).strip() != category:
                 err('Category set in configuration ({0}), but {1} has '
                     'different category ({2}).'.format(
-                    category, fn, this_cat))
+                        category, fn, this_cat))
                 errors = True
 
     if update:
         for fn, contents in data:
-            if not 'id' in contents:
+            if 'id' not in contents:
                 err('id not in contents for "{0}".'.format(fn))
                 errors = True
                 break

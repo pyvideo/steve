@@ -25,6 +25,6 @@ class UrlJoinTestCase(TestCase):
 
             ('http://localhost?foo=bar', ['path1'],
              'http://localhost/path1?foo=bar'),
-            ]:
+        ]:
 
             assert urljoin(base, *args) == expected
