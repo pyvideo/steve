@@ -478,21 +478,24 @@ def scrape_videos(url):
     return YoutubeScraper().scrape(url)
 
 
-def scrape_video(video_url):
+def scrape_video(url):
     """Scrapes the url and fixes the data
 
-    :arg video_url: Url of video to scrape.
+    :arg url: Url of video to scrape.
 
     :returns: Python dict of metadata
 
     Example:
 
-    >>> scrapevideo('http://www.youtube.com/watch?v=ywToByBkOTc')
+    >>> scrape_video('http://www.youtube.com/watch?v=ywToByBkOTc')
     {'url': 'http://www.youtube.com/watch?v=ywToByBkOTc', ...}
 
     """
-    # FIXME: reimplement
-    raise NotImplementedError
+    # FIXME: generate list of available scrapers.
+    # FIXME: run url through all available scrapers.
+    from steve.scrapers import YoutubeScraper
+    data = YoutubeScraper().scrape(url)
+    return data
 
 
 def html_to_markdown(text):

@@ -254,17 +254,16 @@ def verify(cfg, ctx, quiet):
 
 @cli.command()
 @click.option('--quiet/--no-quiet', default=False)
-@click.option('--richard/--no-richard', default=False, help='Return richard-style JSON')
 @click.option('--save/--no-save', default=False,
               help='Save it to the filesystem using title as filename')
 @click.argument('video_url', nargs=1)
 @click.pass_context
-def scrapevideo(ctx, quiet, richard, save, video_url):
+def scrapevideo(ctx, quiet, save, video_url):
     """Fetches metadata for a video from a site."""
     if not quiet:
         click.echo(VERSION)
 
-    data = scrape_video(video_url, richard, 'object')
+    data = scrape_video(video_url)[0]
     if save:
         cfg = get_project_config()
 
