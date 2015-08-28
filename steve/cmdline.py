@@ -9,29 +9,21 @@
 import ConfigParser
 import os
 import sys
+import traceback
 
-import argparse
-import blessings
+import click
+import tabulate
 
-try:
-    import steve
-except ImportError:
-    sys.stderr.write(
-        'The steve library is not on your sys.path.  Please install steve.\n')
-    sys.exit(1)
-
+from steve import __version__
 import steve.restapi
 import steve.richardapi
 from steve.util import (
-    BetterArgumentParser,
     ConfigNotFound,
     convert_to_json,
-    err,
     generate_filename,
     get_from_config,
     get_project_config,
     load_json_files,
-    out,
     save_json_file,
     save_json_files,
     scrape_video,
@@ -39,7 +31,6 @@ from steve.util import (
     stringify,
     verify_json_files,
     with_config,
-    wrap_paragraphs,
 )
 from steve.webedit import serve
 
@@ -47,7 +38,8 @@ from steve.webedit import serve
 BYLINE = ('steve-cmd: {0} ({1}).'.format(steve.__version__,
                                          steve.__releasedate__))
 
-USAGE = 'Usage: steve [program-options] COMMAND [command-options] ARGS'
+USAGE = '%prog [options] [command] [command-options]'
+VERSION = 'steve ' + __version__
 
 DESC = """
 Command line interface for steve.
@@ -78,39 +70,63 @@ api_url =
 """
 
 
-def createproject_cmd(parser, parsed, args):
-    if not parsed.quiet:
-        parser.print_byline()
+def click_run():
+    sys.excepthook = exception_handler
+    try:
+        cli(obj={})
+    except ConfigNotFound as cnf:
+        click.echo(VERSION)
+        click.echo(cnf, err=True)
 
-    path = os.path.abspath(parsed.directory)
+
+@click.group()
+def cli():
+    """Utility for aggregating and editing video metadata for a richard instance."""
+    pass
+
+
+@cli.command()
+@click.option('--quiet/--no-quiet', default=False)
+@click.argument('projectname', nargs=1)
+@click.pass_context
+def createproject(ctx, quiet, projectname):
+    """Creates a new project."""
+    if not quiet:
+        click.echo(VERSION)
+
+    path = os.path.abspath(projectname)
     if os.path.exists(path):
-        err('{0} exists. Remove it and try again or try again with '
-            'a different filename.'.format(path))
-        return 1
+        raise click.ClickException(
+            u'{0} exists. Remove it and try again or try again with '
+            u'a different project name.'.format(path)
+        )
 
     # TODO: this kicks up errors. catch the errors and tell the user
     # something more useful
-    out('Creating directory {0}...'.format(path))
+    click.echo(u'Creating directory {0}...'.format(path))
     os.makedirs(path)
 
-    out('Creating steve.ini...')
-    f = open(os.path.join(path, 'steve.ini'), 'w')
-    f.write(CONFIG)
-    f.close()
+    click.echo(u'Creating steve.ini...')
+    with open(os.path.join(path, 'steve.ini'), 'w') as fp:
+        fp.write(CONFIG)
 
-    out('{0} created.'.format(path))
-    out('')
+    click.echo(u'{0} created.'.format(path))
+    click.echo(u'')
 
-    out('Now cd into the directory and edit the steve.ini file.')
-    out('After you do that, you should put your project into version '
-        'control. Srsly.')
-    return 0
+    click.echo(u'Now cd into the directory and edit the steve.ini file.')
+    click.echo(u'After you do that, you should put your project into version '
+               u'control. Srsly.')
 
 
+@cli.command()
+@click.option('--quiet/--no-quiet', default=False)
+@click.option('--force/--no-force', default=False)
+@click.pass_context
 @with_config
-def fetch_cmd(cfg, parser, parsed, args):
-    if not parsed.quiet:
-        parser.print_byline()
+def fetch(cfg, ctx, quiet, force):
+    """Fetches videos and generates JSON files."""
+    if not quiet:
+        click.echo(VERSION)
 
     projectpath = cfg.get('project', 'projectpath')
     jsonpath = os.path.join(projectpath, 'json')
@@ -130,53 +146,55 @@ def fetch_cmd(cfg, parser, parsed, args):
         url = ''
 
     if not url:
-        err('url not specified in steve.ini project config file.')
-        err('Add "url = ..." to [project] section of steve.ini file.')
-        return 1
+        raise click.ClickException(
+            u'url not specified in steve.ini project config file.\n\n'
+            u'Add "url = ..." to [project] section of steve.ini file.'
+        )
 
-    out('Scraping {0}...'.format(url))
+    click.echo(u'Scraping {0}...'.format(url))
+    click.echo(u'(This can take a *long* time with no indication of progress.)')
     videos = scrape_videos(url)
 
-    print 'Found {0} videos...'.format(len(videos))
+    click.echo(u'Found {0} videos...'.format(len(videos)))
     for i, video in enumerate(videos):
-        if video['source_url'] in source_map and not parsed.force:
-            print 'Skipping {0}... already exists.'.format(
-                stringify(video['title']))
+        if video['source_url'] in source_map and not force:
+            click.echo(u'Skipping {0}... already exists.'.format(
+                stringify(video['title'])))
             continue
 
         filename = generate_filename(video['title'])
         filename = '{index:04d}_{basename}.json'.format(
             index=i, basename=filename[:40])
 
-        print 'Working on {0}... ({1})'.format(
-            stringify(video['title']), filename)
+        click.echo(u'Created {0}... ({1})'.format(
+            stringify(video['title']), filename))
 
-        f = open(os.path.join('json', filename), 'w')
-        f.write(convert_to_json(video))
-        f.close()
+        with open(os.path.join('json', filename), 'w') as fp:
+            fp.write(convert_to_json(video))
 
         # TODO: what if there's a file there already? on the first one,
         # prompt the user whether to stomp on existing files or skip.
-    return 0
 
 
+@cli.command()
+@click.option('--quiet/--no-quiet', default=False)
+@click.option('--aslist/--no-aslist', default=False, help='Lists in-progress files one per line')
+@click.pass_context
 @with_config
-def status_cmd(cfg, parser, parsed, args):
-    if not parsed.quiet and not parsed.list:
-        parser.print_byline()
-
-    if not parsed.list and not parsed.quiet:
-        out('Video status:')
-        out('')
+def status(cfg, ctx, quiet, aslist):
+    """Shows status for all videos in this project."""
+    quiet = quiet or aslist
+    if not quiet:
+        click.echo(VERSION)
+        click.echo('Video status:')
+        click.echo()
 
     files = load_json_files(cfg)
 
     if not files:
-        if not parsed.list:
-            out('No files')
-        return 0
-
-    term = blessings.Terminal()
+        if not aslist:
+            click.echo('No files')
+        return
 
     done_files = []
     in_progress_files = []
@@ -188,59 +206,65 @@ def status_cmd(cfg, parser, parsed, args):
         else:
             done_files.append(fn)
 
-    if parsed.list:
+    if aslist:
         for fn in in_progress_files:
-            out(fn, wrap=False)
+            click.echo(fn)
 
     else:
+        table = []
         if in_progress_files:
             for fn, whiteboard in in_progress_files:
-                out(u'{0}: {1}'.format(fn, term.bold(whiteboard)),
-                    wrap=False)
+                table.append([fn, whiteboard])
 
         if done_files:
-            out('')
             for fn in done_files:
-                out('{0}: {1}'.format(fn, term.bold(term.green('Done!'))),
-                    wrap=False)
+                table.append([fn, 'Done!'])
 
-        out('')
-        out('In progress: {0:3d}'.format(len(in_progress_files)))
-        out('Done:        {0:3d}'.format(len(done_files)))
-
-    return 0
+        click.echo(tabulate.tabulate(table))
+        click.echo()
+        click.echo('In progress: {0:4d}'.format(len(in_progress_files)))
+        click.echo('Done:        {0:4d}'.format(len(done_files)))
 
 
+@cli.command()
+@click.option('--quiet/--no-quiet', default=False)
+@click.pass_context
 @with_config
-def verify_cmd(cfg, parser, parsed, args):
-    if not parsed.quiet:
-        parser.print_byline()
+def verify(cfg, ctx, quiet):
+    """Verifies JSON data."""
+    if not quiet:
+        click.echo(VERSION)
 
     files = load_json_files(cfg)
     if not files:
-        out('No files')
-        return 0
+        click.echo('No files')
+        return
 
     filename_to_errors = verify_json_files(
         files, cfg.get('project', 'category'))
     for filename in sorted(filename_to_errors.keys()):
         errors = filename_to_errors[filename]
         if errors:
-            out(filename)
+            click.echo(filename)
             for error in errors:
-                out('  - {0}'.format(error))
+                click.echo('  - {0}'.format(error))
 
-    out('Done!')
-    return 0
+    click.echo('Done!')
 
 
-def scrapevideo_cmd(parser, parsed, args):
-    if not parsed.quiet:
-        parser.print_byline()
+@cli.command()
+@click.option('--quiet/--no-quiet', default=False)
+@click.option('--save/--no-save', default=False,
+              help='Save it to the filesystem using title as filename')
+@click.argument('video_url', nargs=1)
+@click.pass_context
+def scrapevideo(ctx, quiet, save, video_url):
+    """Fetches metadata for a video from a site."""
+    if not quiet:
+        click.echo(VERSION)
 
-    video_url = parsed.video[0]
-    data = scrape_video(video_url, parsed.richard, 'object')
-    if parsed.save:
+    data = scrape_video(video_url)[0]
+    if save:
         cfg = get_project_config()
 
         projectpath = cfg.get('project', 'projectpath')
@@ -252,48 +276,54 @@ def scrapevideo_cmd(parser, parsed, args):
         fn = 'json/' + generate_filename(data['title']) + '.json'
 
         if os.path.exists(fn):
-            err('It already exists!')
-            return 1
+            raise click.ClickException(u'File "%s" already exists!' % fn)
 
         with open(fn, 'w') as fp:
             fp.write(convert_to_json(data))
-        print 'Saved as {0}'.format(fn)
+        click.echo(u'Saved as {0}'.format(fn))
+
     else:
-        print convert_to_json(data)
-    return 0
+        click.echo(convert_to_json(data))
 
 
+@cli.command()
+@click.option('--quiet/--no-quiet', default=False)
+@click.option('--apikey', default='', help='Pass in your API key via the command line')
+@click.option('--update/--no-update', default=False,
+              help='Update data rather than push new data (PUT vs. POST)')
+@click.option('--overwrite/--no-overwrite', default=False, help='If it exists, overwrite it?')
+@click.argument('files', nargs=-1)
+@click.pass_context
 @with_config
-def push_cmd(cfg, parser, parsed, args):
-    if not parsed.quiet:
-        parser.print_byline()
+def push(cfg, ctx, quiet, apikey, update, overwrite, files):
+    """Pushes metadata to a richard instance."""
+    if not quiet:
+        click.echo(VERSION)
 
     # Get username, api_url and api_key.
 
     username = get_from_config(cfg, 'username')
     api_url = get_from_config(cfg, 'api_url')
 
-    update = parsed.update
-
     # Command line api_key overrides config-set api_key
-    api_key = parsed.apikey
-    if not api_key:
+    if not apikey:
         try:
-            api_key = cfg.get('project', 'api_key')
+            apikey = cfg.get('project', 'api_key')
         except ConfigParser.NoOptionError:
             pass
-    if not api_key:
-        err('Specify an api key either in steve.ini, on command line, '
-            'or in API_KEY file.')
-        return 1
+    if not apikey:
+        raise click.ClickException(
+            u'Specify an api key either in steve.ini, on command line, '
+            u'or in API_KEY file.'
+        )
 
-    if not username or not api_url or not api_key:
-        return 1
+    if not username or not api_url or not apikey:
+        raise click.ClickException(u'Missing username, api_url or api_key.')
 
     data = load_json_files(cfg)
 
-    if args:
-        data = [(fn, contents) for fn, contents in data if fn in args]
+    if files:
+        data = [(fn, contents) for fn, contents in data if fn in files]
 
     # There are two modes:
     #
@@ -316,61 +346,63 @@ def push_cmd(cfg, parser, parsed, args):
         category = cfg.get('project', 'category')
         category = category.strip()
         if category not in all_categories:
-            err('Category "{0}" does not exist on server. Build it there '
-                'first.'.format(category))
-            return 1
+            raise click.ClickException(
+                u'Category "{0}" does not exist on server. Build it there '
+                u'first.'.format(category)
+            )
         else:
-            out('Category {0} exists on site.'.format(category))
+            click.echo('Category {0} exists on site.'.format(category))
     except ConfigParser.NoOptionError:
         category = None
 
-    errors = False
+    errors = []
     for fn, contents in data:
         if category is None:
             this_cat = contents.get('category')
             if not this_cat:
-                err('No category set in configuration and {0} has no '
-                    'category set.'.format(fn))
-                errors = True
+                errors.append(
+                    u'No category set in configuration and {0} has no '
+                    u'category set.'.format(fn)
+                )
             elif this_cat != this_cat.strip():
-                err('Category "{0}" has whitespace at beginning or '
-                    'end.'.format(this_cat))
-                return 1
+                errors.append(
+                    u'Category "{0}" has whitespace at beginning or '
+                    u'end.'.format(this_cat)
+                )
             elif this_cat not in all_categories:
-                err('Category "{0}" does not exist on server. '
-                    'Build it there first.'.format(this_cat))
-                return 1
+                errors.append(
+                    u'Category "{0}" does not exist on server. '
+                    u'Build it there first.'.format(this_cat)
+                )
 
         else:
             this_cat = contents.get('category')
             if this_cat is not None and str(this_cat).strip() != category:
-                err('Category set in configuration ({0}), but {1} has '
-                    'different category ({2}).'.format(
-                        category, fn, this_cat))
-                errors = True
+                errors.append(
+                    u'Category set in configuration ({0}), but {1} has '
+                    u'different category ({2}).'.format(category, fn, this_cat)
+                )
 
     if update:
         for fn, contents in data:
             if 'id' not in contents:
-                err('id not in contents for "{0}".'.format(fn))
-                errors = True
-                break
+                errors.append(
+                    u'id not in contents for "{0}".'.format(fn)
+                )
 
     if errors:
-        err('Aborting.')
-        return 1
+        raise click.ClickException('\n'.join(errors))
 
     # Everything looks ok. So double-check with the user and push.
 
-    out('Pushing to: {0}'.format(api_url))
-    out('Username:   {0}'.format(username))
-    out('api_key:    {0}'.format(api_key))
-    out('update?:    {0}'.format(update))
-    out('# videos:   {0}'.format(len(data)))
-    out('Once you push, you can not undo it. Push for realz? Y/N')
+    click.echo('Pushing to: {0}'.format(api_url))
+    click.echo('Username:   {0}'.format(username))
+    click.echo('api_key:    {0}'.format(apikey))
+    click.echo('update?:    {0}'.format(update))
+    click.echo('# videos:   {0}'.format(len(data)))
+    click.echo('Once you push, you can not undo it. Push for realz? Y/N')
     if not raw_input().strip().lower().startswith('y'):
-        err('Aborting.')
-        return 1
+        raise click.Abort()
 
     for fn, contents in data:
         contents['category'] = category or contents.get('category')
@@ -378,85 +410,90 @@ def push_cmd(cfg, parser, parsed, args):
         if not update:
             # Nix any id field since that causes problems.
             if 'id' in contents:
-                if not parsed.overwrite:
-                    print 'Skipping... already exists'
+                if not overwrite:
+                    click.echo(u'Skipping... already exists.')
                     continue
                 del contents['id']
 
-            out('Pushing {0}'.format(fn))
+            click.echo('Pushing {0}'.format(fn))
             try:
-                vid = steve.richardapi.create_video(api_url, api_key, contents)
+                vid = steve.richardapi.create_video(api_url, apikey, contents)
 
                 if 'id' in vid:
                     contents['id'] = vid['id']
-                    out('   Now has id {0}'.format(vid['id']))
+                    click.echo('   Now has id {0}'.format(vid['id']))
                 else:
-                    err('   Errors?: {0}'.format(vid))
+                    click.echo('   Errors?: {0}'.format(vid), err=True)
             except steve.restapi.RestAPIException as exc:
-                err('   Error?: {0}'.format(exc))
-                err('   "{0}"'.format(exc.response.content))
+                click.echo('   Error?: {0}'.format(exc), err=True)
+                click.echo('   "{0}"'.format(exc.response.content), err=True)
 
         else:
-            out('Updating {0} "{1}" ({2})'.format(
+            click.echo('Updating {0} "{1}" ({2})'.format(
                 contents['id'], contents['title'], fn))
             try:
                 vid = steve.richardapi.update_video(
-                    api_url, api_key, contents['id'], contents)
+                    api_url, apikey, contents['id'], contents)
             except steve.restapi.RestAPIException as exc:
-                err('   Error?: {0}'.format(exc))
-                err('   "{0}"'.format(exc.response.content))
+                click.err('   Error?: {0}'.format(exc))
+                click.err('   "{0}"'.format(exc.response.content))
 
         save_json_file(cfg, fn, contents)
 
-    return 0
 
-
+@cli.command()
+@click.pass_context
 @with_config
-def webedit_cmd(cfg, parser, parsed, args):
-    parser.print_byline()
+def webedit(cfg, ctx):
+    """Launches web server so you can edit in browser."""
+    click.echo(VERSION)
     serve()
 
 
+@cli.command()
+@click.option('--quiet/--no-quiet', default=False)
+@click.option('--apikey', default='', help='Pass in your API key via the command line')
+@click.pass_context
 @with_config
-def pull_cmd(cfg, parser, parsed, args):
-    if not parsed.quiet:
-        parser.print_byline()
+def pull(cfg, ctx, quiet, apikey):
+    """Pulls data from a richard instance."""
+    if not quiet:
+        click.echo(VERSION)
 
     username = get_from_config(cfg, 'username')
     api_url = get_from_config(cfg, 'api_url')
     cat_title = get_from_config(cfg, 'category')
 
     # Command line api_key overrides config-set api_key
-    api_key = parsed.apikey
-    if not api_key:
+    if not apikey:
         try:
-            api_key = cfg.get('project', 'api_key')
+            apikey = cfg.get('project', 'api_key')
         except ConfigParser.NoOptionError:
             pass
-    if not api_key:
-        err('Specify an api key either in steve.ini, on command line, '
-            'or in API_KEY file.')
-        return 1
+    if not apikey:
+        raise click.ClickException(
+            u'Specify an api key either in steve.ini, on command line, '
+            u'or in API_KEY file.'
+        )
 
-    if not username or not api_url or not cat_title or not api_key:
-        return 1
+    if not username or not api_url or not cat_title or not apikey:
+        raise click.ClickException(u'Missing username, api_url or api_key.')
 
     api = steve.restapi.API(api_url)
 
     all_categories = steve.restapi.get_content(
-        api.category.get(username=username, api_key=api_key,
+        api.category.get(username=username, api_key=apikey,
                          limit=0))
     cat = [cat_item for cat_item in all_categories['objects']
            if cat_item['title'] == cat_title]
 
     if not cat:
-        err('Category "{0}" does not exist.'.format(cat_title))
-        return 1
+        raise click.ClickException(u'Category "{0}" does not exist.'.format(cat_title))
 
     # Get the category from the list of 1.
     cat = cat[0]
 
-    out('Retrieved category.')
+    click.echo('Retrieved category.')
 
     data = []
 
@@ -466,9 +503,9 @@ def pull_cmd(cfg, parser, parsed, args):
 
         video_data = steve.restapi.get_content(
             api.video(video_id).get(username=username,
-                                    api_key=api_key))
+                                    api_key=apikey))
 
-        out('Working on "{0}"'.format(video_data['slug']))
+        click.echo('Working on "{0}"'.format(video_data['slug']))
 
         # Nix some tastypie bits from the data.
         for bad_key in ('resource_uri',):
@@ -481,119 +518,23 @@ def pull_cmd(cfg, parser, parsed, args):
         fn = 'json/{0:4d}_{1}.json'.format(counter, video_data['slug'])
         data.append((fn, video_data))
 
-    out('Saving files....')
+    click.echo('Saving files....')
     save_json_files(cfg, data)
 
-    return 0
 
-
-def main(argv):
-    parser = BetterArgumentParser(
-        byline=BYLINE,
-        description=wrap_paragraphs(
-            'steve makes it easier to aggregate and edit metadata for videos '
-            'for a richard instance.'
-            '\n\n'
-            'This program comes with ABSOLUTELY NO WARRANTY.  '
-            'This is free software and you are welcome to redistribute it'
-            'under the terms of the GPLv3.'),
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-
-    parser.add_argument(
-        '-q', '--quiet',
-        action='store_true',
-        default=False,
-        help='runs steve quietly--only prints errors')
-
-    subparsers = parser.add_subparsers(
-        title='Commands',
-        help='Run "%(prog)s CMD --help" for additional help')
-
-    createproject_parser = subparsers.add_parser(
-        'createproject', help='creates a new project')
-    createproject_parser.add_argument(
-        'directory',
-        help='name/path for the project directory')
-    createproject_parser.set_defaults(func=createproject_cmd)
-
-    fetch_parser = subparsers.add_parser(
-        'fetch', help='fetches all the videos and generates .json files')
-    fetch_parser.add_argument(
-        '--force',
-        action='store_true',
-        default=False,
-        help='forces steve to stomp on existing files')
-    fetch_parser.set_defaults(func=fetch_cmd)
-
-    status_parser = subparsers.add_parser(
-        'status', help='shows you status of the videos in this project')
-    status_parser.add_argument(
-        '--list',
-        action='store_true',
-        default=False,
-        help='lists files one per line with no other output')
-    status_parser.set_defaults(func=status_cmd)
-
-    verify_parser = subparsers.add_parser(
-        'verify', help='verifies json data')
-    verify_parser.set_defaults(func=verify_cmd)
-
-    scrapevideo_parser = subparsers.add_parser(
-        'scrapevideo', help='fetches metadata for a video from a site')
-    scrapevideo_parser.add_argument(
-        '--richard',
-        action='store_true',
-        default=False,
-        help='return richard JSON format')
-    scrapevideo_parser.add_argument(
-        '--save',
-        action='store_true',
-        default=False,
-        help='saves it to the filesystem using the title as the filename')
-    scrapevideo_parser.add_argument(
-        'video',
-        nargs=1)
-    scrapevideo_parser.set_defaults(func=scrapevideo_cmd)
-
-    push_parser = subparsers.add_parser(
-        'push', help='pushes metadata to a richard instance')
-    push_parser.add_argument(
-        '--apikey',
-        help='pass in your API key via the command line')
-    push_parser.add_argument(
-        '--update',
-        action='store_true',
-        default=False,
-        help='update data rather than push new data (PUT vs. POST)')
-    push_parser.add_argument(
-        '--overwrite',
-        action='store_true',
-        default=False,
-        help='if it exists, overwrite it')
-    push_parser.set_defaults(func=push_cmd)
-
-    pull_parser = subparsers.add_parser(
-        'pull', help='pulls metadata from a richard instance')
-    pull_parser.add_argument(
-        '--apikey',
-        help='pass in your API key via the command line')
-    pull_parser.set_defaults(func=pull_cmd)
-
-    webedit_parser = subparsers.add_parser(
-        'webedit', help='launches web server so you can edit in browser')
-    webedit_parser.set_defaults(func=webedit_cmd)
-
-    parsed, args = parser.parse_known_args(argv)
-
-    try:
-        return parsed.func(parser, parsed, args)
-    except ConfigNotFound as cnf:
-        # Some commands have the @with_config decorator which throws a
-        # ConfigNotFound exception if the steve.ini file can't be
-        # found. Print the message and return 1.
-        err(cnf.message)
-        return 1
-
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+def exception_handler(exc_type, exc_value, exc_tb):
+    click.echo('Oh no! Steve has thrown an error while trying to do stuff.')
+    click.echo()
+    click.echo('Please write up a bug report with the specifics so that we can fix it.')
+    click.echo()
+    click.echo('https://github.com/pyvideo/steve/issues')
+    click.echo()
+    click.echo('Here is some information you can copy and paste into the bug report:')
+    click.echo()
+    click.echo('---')
+    click.echo('Steve: ' + repr(__version__))
+    click.echo('Python: ' + repr(sys.version))
+    click.echo('Command line: ' + repr(sys.argv))
+    click.echo(
+        ''.join(traceback.format_exception(exc_type, exc_value, exc_tb)))
+    click.echo('---')

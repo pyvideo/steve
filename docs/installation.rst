@@ -42,7 +42,7 @@ git clone and installing from that:
 
     1. ``git clone git://github.com/pyvideo/steve.git``
     2. ``cd steve``
-    3. ``python setup.py develop``
+    3. ``pip install -r requirements.txt``
 
     Update like this:
 
@@ -60,7 +60,7 @@ do this:
 1. ``git clone git://github.com/pyvideo/steve.git``
 2. ``cd steve``
 3. ``virtualenv ./venv/``
-4. ``./venv/bin/python setup.py develop``
+4. ``./venv/bin/pip install -r requirements.txt``
 
 When you want to use steve from your virtual environment, make sure to
 activate the virtual environment first. e.g.:

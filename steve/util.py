@@ -6,7 +6,6 @@
 # license.
 #######################################################################
 
-import argparse
 import ConfigParser
 import datetime
 import json
@@ -40,25 +39,6 @@ class SteveException(Exception):
 class ConfigNotFound(SteveException):
     """Denotes the config file couldn't be found"""
     pass
-
-
-class BetterArgumentParser(argparse.ArgumentParser):
-    def __init__(self, *args, **kw):
-        if 'byline' in kw:
-            self.byline = kw.pop('byline')
-        else:
-            self.byline = None
-        argparse.ArgumentParser.__init__(self, *args, **kw)
-
-    def print_byline(self, file=None):
-        if file is None:
-            file = sys.stdout
-        if self.byline:
-            self._print_message(self.byline + '\n', file)
-
-    def print_usage(self, file=None):
-        self.print_byline(file)
-        argparse.ArgumentParser.print_usage(self, file)
 
 
 def with_config(fun):
@@ -360,11 +340,6 @@ def wrap(text, indent=''):
         .wrap(text))
 
 
-def wrap_paragraphs(text):
-    text = ['\n'.join(textwrap.wrap(mem)) for mem in text.split('\n\n')]
-    return '\n\n'.join(text)
-
-
 def err(*output, **kw):
     """Writes output to stderr.
 
@@ -503,21 +478,24 @@ def scrape_videos(url):
     return YoutubeScraper().scrape(url)
 
 
-def scrape_video(video_url):
+def scrape_video(url):
     """Scrapes the url and fixes the data
 
-    :arg video_url: Url of video to scrape.
+    :arg url: Url of video to scrape.
 
     :returns: Python dict of metadata
 
     Example:
 
-    >>> scrapevideo('http://www.youtube.com/watch?v=ywToByBkOTc')
+    >>> scrape_video('http://www.youtube.com/watch?v=ywToByBkOTc')
     {'url': 'http://www.youtube.com/watch?v=ywToByBkOTc', ...}
 
     """
-    # FIXME: reimplement
-    raise NotImplementedError
+    # FIXME: generate list of available scrapers.
+    # FIXME: run url through all available scrapers.
+    from steve.scrapers import YoutubeScraper
+    data = YoutubeScraper().scrape(url)
+    return data
 
 
 def html_to_markdown(text):
