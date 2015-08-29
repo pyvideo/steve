@@ -2,7 +2,6 @@ import os
 from unittest import TestCase
 
 from click.testing import CliRunner
-import pytest
 
 from steve.cmdline import cli
 
