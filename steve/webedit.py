@@ -165,7 +165,7 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
                     # TODO: Verify the data format
                     value = form_data[key].value
                 elif req['type'] in ('CharField', 'TextField'):
-                    value = form_data[key].value
+                    value = form_data[key].value.replace('\r\n', '\n')
                 elif req['type'] == 'SlugField':
                     # TODO: Verify the data format. Maybe if there is
                     # no slug field, we create it from the title?
@@ -176,6 +176,10 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
                     value = form_data[key].value
                     value = [mem.strip() for mem in value.split('\n')
                              if mem.strip()]
+                elif req['type'] in ('URLField'):
+                    value = form_data[key].value
+                else:
+                    raise NotImplementedError
 
                 data[key] = value
             else:
