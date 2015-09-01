@@ -94,6 +94,10 @@ def get_project_config():
         cp.get('project', 'projectpath')
     except ConfigParser.NoOptionError:
         cp.set('project', 'projectpath', projectpath)
+    try:
+        cp.get('project', 'jsonpath')
+    except ConfigParser.NoOptionError:
+        cp.set('project', 'jsonpath', os.path.join(cp.get('project', 'projectpath'), 'json'))
 
     # If STEVE_CRED_FILE is specified in the environment or there's a
     # cred_file in the config file, then open the file and pull the
@@ -387,25 +391,23 @@ def load_json_files(config):
         metadata.
 
     """
-    projectpath = config.get('project', 'projectpath')
-    jsonpath = os.path.join(projectpath, 'json')
+    jsonpath = config.get('project', 'jsonpath')
 
     if not os.path.exists(jsonpath):
         return []
 
     files = [f for f in os.listdir(jsonpath) if f.endswith('.json')]
-    files = [os.path.join('json', f) for f in files]
-    files.sort()
 
     data = []
 
-    for fn in files:
+    for fn in sorted(files):
         try:
-            fp = open(fn, 'r')
+            full_path = full_path = os.path.join(jsonpath, fn)
+            fp = open(full_path, 'r')
             data.append((fn, json.load(fp)))
             fp.close()
         except Exception, e:
-            err('Problem with {0}'.format(fn), wrap=False)
+            err('Problem with {0}'.format(full_path), wrap=False)
             raise e
 
     return data
@@ -430,13 +432,14 @@ def save_json_files(config, data, **kw):
     if 'sort_keys' not in kw:
         kw['sort_keys'] = True
 
-    projectpath = config.get('project', 'projectpath')
-    jsonpath = os.path.join(projectpath, 'json')
+    jsonpath = config.get('project', 'jsonpath')
     if not os.path.exists(jsonpath):
         os.makedirs(jsonpath)
 
     for fn, contents in data:
-        fp = open(fn, 'w')
+        assert os.sep not in fn
+        full_path = os.path.join(jsonpath, fn)
+        fp = open(full_path, 'w')
         json.dump(contents, fp, **kw)
         fp.close()
 
@@ -456,7 +459,14 @@ def save_json_file(config, filename, contents, **kw):
     if 'sort_keys' not in kw:
         kw['sort_keys'] = True
 
-    fp = open(filename, 'w')
+    jsonpath = config.get('project', 'jsonpath')
+    if not os.path.exists(jsonpath):
+        os.makedirs(jsonpath)
+
+    assert os.sep not in filename
+    full_path = os.path.join(jsonpath, filename)
+
+    fp = open(full_path, 'w')
     json.dump(contents, fp, **kw)
     fp.close()
 

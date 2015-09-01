@@ -7,7 +7,7 @@
 
       <li>
         {% if prev_fn %}
-          <a href="/edit/{{ prev_fn[5:] }}">&lt;&lt;&lt; PREV</a>
+          <a href="/edit/{{ prev_fn }}">&lt;&lt;&lt; PREV</a>
         {% else %}
           &lt;&lt;&lt; PREV
         {% endif %}
@@ -15,7 +15,7 @@
 
       <li>
         {% if next_fn %}
-          <a href="/edit/{{ next_fn[5:] }}">NEXT &gt;&gt;&gt;</a>
+          <a href="/edit/{{ next_fn }}">NEXT &gt;&gt;&gt;</a>
         {% else %}
           NEXT &gt;&gt;&gt;
         {% endif %}
@@ -38,11 +38,11 @@
   to verify the data, run <code>steve verify</code> from the command
   line.
 </p>
-<form id="videoform" action="/save/{{ fn[5:] }}" method="POST">
+<form id="videoform" action="/save/{{ fn }}" method="POST">
 <table>
   <tr>
     <th>filename</th>
-    <td>{{ fn[5:] }}</td>
+    <td>{{ fn }}</td>
   </tr>
 
   {% for field in fields %}

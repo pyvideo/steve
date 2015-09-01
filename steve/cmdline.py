@@ -128,8 +128,7 @@ def fetch(cfg, ctx, quiet, force):
     if not quiet:
         click.echo(VERSION)
 
-    projectpath = cfg.get('project', 'projectpath')
-    jsonpath = os.path.join(projectpath, 'json')
+    jsonpath = cfg.get('project', 'jsonpath')
 
     # source_url -> filename
     source_map = dict(
@@ -169,7 +168,7 @@ def fetch(cfg, ctx, quiet, force):
         click.echo(u'Created {0}... ({1})'.format(
             stringify(video['title']), filename))
 
-        with open(os.path.join('json', filename), 'w') as fp:
+        with open(os.path.join(jsonpath, filename), 'w') as fp:
             fp.write(convert_to_json(video))
 
         # TODO: what if there's a file there already? on the first one,
@@ -267,18 +266,18 @@ def scrapevideo(ctx, quiet, save, video_url):
     if save:
         cfg = get_project_config()
 
-        projectpath = cfg.get('project', 'projectpath')
-        jsonpath = os.path.join(projectpath, 'json')
+        jsonpath = cfg.get('project', 'jsonpath')
 
         if not os.path.exists(jsonpath):
             os.makedirs(jsonpath)
 
-        fn = 'json/' + generate_filename(data['title']) + '.json'
+        fn = generate_filename(data['title']) + '.json'
+        full_path = os.path.join(jsonpath, fn)
 
         if os.path.exists(fn):
             raise click.ClickException(u'File "%s" already exists!' % fn)
 
-        with open(fn, 'w') as fp:
+        with open(full_path, 'w') as fp:
             fp.write(convert_to_json(data))
         click.echo(u'Saved as {0}'.format(fn))
 
