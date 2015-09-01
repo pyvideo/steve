@@ -34,7 +34,7 @@ PORT = 8000
 
 def get_data(cfg, fn):
     data_files = load_json_files(cfg)
-    data_files = [d for d in data_files if d[0][5:] == fn]
+    data_files = [d for d in data_files if d[0] == fn]
     return data_files[0] if data_files else None
 
 
@@ -193,7 +193,7 @@ class WebEditRequestHandler(BaseHTTPRequestHandler):
 
         save_json_file(cfg, fn, data)
 
-        return self.redirect('/edit/{0}'.format(fn[5:]))
+        return self.redirect('/edit/{0}'.format(fn))
 
 
 def serve():
