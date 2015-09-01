@@ -14,5 +14,5 @@ Project details
 :Code:          https://github.com/pyvideo/steve
 :Documentation: http://steve.rtfd.org
 :Issue tracker: https://github.com/pyvideo/steve/issues
-:IRC:           ``#richard`` on irc.mozilla.org
+:IRC channel:   ``#richard`` on ``irc.freenode.net``
 :License:       BSD
