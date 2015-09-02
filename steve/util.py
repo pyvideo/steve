@@ -41,6 +41,133 @@ class ConfigNotFound(SteveException):
     pass
 
 
+class Config(object):
+    def __init__(self):
+        self._file_name = None
+
+    def initialise(self):
+        raise NotImplementedError
+
+    def load(self):
+        raise NotImplementedError
+
+    def get(self, section, key):
+        raise NotImplementedError
+
+
+class IniConfig(Config):
+    file_name = 'steve.ini'
+
+    def __init__(self):
+        super(IniConfig, self).__init__()
+
+    def load(self):
+        """Finds and opens the config file in the current directory
+
+        :raises ConfigNotFound: if the config file can't be found
+
+        :returns: config file
+
+        """
+        # TODO: Should we support parent directories, too?
+        projectpath = os.getcwd()
+        path = os.path.join(projectpath, 'steve.ini')
+        if not os.path.exists(path):
+            projectpath = os.path.dirname(projectpath)
+            path = os.path.join(projectpath, 'steve.ini')
+            if not os.path.exists(path):
+                raise ConfigNotFound('steve.ini could not be found.')
+
+        self._data = cp = ConfigParser.ConfigParser()
+        cp.read(path)
+
+        # TODO: This is a little dirty since we're inserting stuff into
+        # the config file if it's not there, but so it goes.
+        try:
+            cp.get('project', 'projectpath')
+        except ConfigParser.NoOptionError:
+            cp.set('project', 'projectpath', projectpath)
+        try:
+            cp.get('project', 'jsonpath')
+        except ConfigParser.NoOptionError:
+            cp.set('project', 'jsonpath', os.path.join(cp.get('project', 'projectpath'), 'json'))
+        # If STEVE_CRED_FILE is specified in the environment or there's a
+        # cred_file in the config file, then open the file and pull the
+        # API information from there:
+        #
+        # * api_url
+        # * username
+        # * api_key
+        #
+        # This allows people to have a whole bunch of steve project
+        # directories and store their credentials in a central location.
+        cred_file = None
+        try:
+            cred_file = os.environ['STEVE_CRED_FILE']
+        except KeyError:
+            try:
+                cred_file = cp.get('project', 'cred_file')
+            except ConfigParser.NoOptionError:
+                pass
+
+        if cred_file:
+            cred_file = os.path.abspath(cred_file)
+
+            if os.path.exists(cred_file):
+                cfp = ConfigParser.ConfigParser()
+                cfp.read(cred_file)
+                cp.set('project', 'api_url', cfp.get('default', 'api_url'))
+                cp.set('project', 'username', cfp.get('default', 'username'))
+                cp.set('project', 'api_key', cfp.get('default', 'api_key'))
+
+        return self
+
+    def get(self, section, key):
+        return self._data.get(section, key)
+
+    _CONFIG = textwrap.dedent("""\
+    [project]
+    # The name of this group of videos. For example, if this was a conference
+    # called EuroPython 2011, then you'd put:
+    # category = EuroPython 2011
+    category =
+
+    # The url for where all the videos are listed.
+    # e.g. url = http://www.youtube.com/user/PythonItalia/videos
+    url =
+
+    # The projectpath is where steve assumes subdirs if not explitly set
+    # projectpath = {projectpath}
+    # The jsonpath, if set, is where steve will look for the JSON files
+    # jsonpath = {jsonpath}
+
+    # The url for the richard instance api.
+    # e.g. url = http://example.com/api/v1/
+    api_url =
+
+    # Your username and api key.
+    #
+    # Alternatively, you can pass this on the command line or put it in a
+    # separate API_KEY file which you can keep out of version control.
+    # e.g. username = willkg
+    #      api_key = OU812
+    # username =
+    # api_key =
+    """)
+
+    def create(self, dir_path):
+        abs_path = os.path.abspath(dir_path)
+        kw = dict(
+            projectpath=abs_path,
+            jsonpath=os.path.join(abs_path, 'json')
+        )
+        with open(os.path.join(dir_path, self.file_name), 'w') as fp:
+            fp.write(self._CONFIG.format(**kw))
+
+
+SteveConfig = IniConfig   # to allow easy switching in the future
+
+
 def with_config(fun):
     """Decorator that passes config as first argument
 
@@ -73,62 +200,31 @@ def with_config(fun):
 
 def get_project_config():
     """Finds and opens the config file in the current directory
+      or parent directory
 
     :raises ConfigNotFound: if the config file can't be found
 
     :returns: config file
 
     """
-    # TODO: Should we support parent directories, too?
-    projectpath = os.getcwd()
-    path = os.path.join(projectpath, 'steve.ini')
-    if not os.path.exists(path):
-        raise ConfigNotFound('steve.ini could not be found.')
+    return SteveConfig().load()
 
-    cp = ConfigParser.ConfigParser()
-    cp.read(path)
 
-    # TODO: This is a little dirty since we're inserting stuff into
-    # the config file if it's not there, but so it goes.
-    try:
-        cp.get('project', 'projectpath')
-    except ConfigParser.NoOptionError:
-        cp.set('project', 'projectpath', projectpath)
-    try:
-        cp.get('project', 'jsonpath')
-    except ConfigParser.NoOptionError:
-        cp.set('project', 'jsonpath', os.path.join(cp.get('project', 'projectpath'), 'json'))
+def get_project_config_file_name():
+    """
+    :returns: config file basename
+    """
+    return SteveConfig.file_name
 
-    # If STEVE_CRED_FILE is specified in the environment or there's a
-    # cred_file in the config file, then open the file and pull the
-    # API information from there:
-    #
-    # * api_url
-    # * username
-    # * api_key
-    #
-    # This allows people to have a whole bunch of steve project
-    # directories and store their credentials in a central location.
-    cred_file = None
-    try:
-        cred_file = os.environ['STEVE_CRED_FILE']
-    except KeyError:
-        try:
-            cred_file = cp.get('project', 'cred_file')
-        except ConfigParser.NoOptionError:
-            pass
 
-    if cred_file:
-        cred_file = os.path.abspath(cred_file)
+def create_project_config_file(dir_path):
+    """Creates a new config file in directory
 
-        if os.path.exists(cred_file):
-            cfp = ConfigParser.ConfigParser()
-            cfp.read(cred_file)
-            cp.set('project', 'api_url', cfp.get('default', 'api_url'))
-            cp.set('project', 'username', cfp.get('default', 'username'))
-            cp.set('project', 'api_key', cfp.get('default', 'api_key'))
+    :param dir_path: directory in which to create the config file
 
-    return cp
+    :returns: config file basename
+    """
+    SteveConfig().create(dir_path)
 
 
 def get_from_config(cfg, key, section='project',

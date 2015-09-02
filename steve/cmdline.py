@@ -19,10 +19,12 @@ import steve.restapi
 import steve.richardapi
 from steve.util import (
     ConfigNotFound,
+    create_project_config_file,
     convert_to_json,
     generate_filename,
     get_from_config,
     get_project_config,
+    get_project_config_file_name,
     load_json_files,
     save_json_file,
     save_json_files,
@@ -43,30 +45,6 @@ VERSION = 'steve ' + __version__
 
 DESC = """
 Command line interface for steve.
-"""
-
-CONFIG = """[project]
-# The name of this group of videos. For example, if this was a conference
-# called EuroPython 2011, then you'd put:
-# category = EuroPython 2011
-category =
-
-# The url for where all the videos are listed.
-# e.g. url = http://www.youtube.com/user/PythonItalia/videos
-url =
-
-# The url for the richard instance api.
-# e.g. url = http://example.com/api/v1/
-api_url =
-
-# Your username and api key.
-#
-# Alternatively, you can pass this on the command line or put it in a
-# separate API_KEY file which you can keep out of version control.
-# e.g. username = willkg
-#      api_key = OU812
-# username =
-# api_key =
 """
 
 
@@ -106,14 +84,14 @@ def createproject(ctx, quiet, projectname):
     click.echo(u'Creating directory {0}...'.format(path))
     os.makedirs(path)
 
-    click.echo(u'Creating steve.ini...')
-    with open(os.path.join(path, 'steve.ini'), 'w') as fp:
-        fp.write(CONFIG)
+    conf_name = get_project_config_file_name()
+    click.echo(u'Creating {0}...'.format(conf_name))
+    create_project_config_file(path)
 
     click.echo(u'{0} created.'.format(path))
     click.echo(u'')
 
-    click.echo(u'Now cd into the directory and edit the steve.ini file.')
+    click.echo(u'Now cd into the directory and edit the {0} file.'.format(conf_name))
     click.echo(u'After you do that, you should put your project into version '
                u'control. Srsly.')
 
@@ -146,8 +124,9 @@ def fetch(cfg, ctx, quiet, force):
 
     if not url:
         raise click.ClickException(
-            u'url not specified in steve.ini project config file.\n\n'
-            u'Add "url = ..." to [project] section of steve.ini file.'
+            u'url not specified in {0} project config file.\n\n'
+            u'Add "url = ..." to [project] section of {0} file.'.format(
+                get_project_config_file_name())
         )
 
     click.echo(u'Scraping {0}...'.format(url))
@@ -312,8 +291,8 @@ def push(cfg, ctx, quiet, apikey, update, overwrite, files):
             pass
     if not apikey:
         raise click.ClickException(
-            u'Specify an api key either in steve.ini, on command line, '
-            u'or in API_KEY file.'
+            u'Specify an api key either in {0}, on command line, '
+            u'or in API_KEY file.'.format(get_project_config_file_name())
         )
 
     if not username or not api_url or not apikey:
@@ -471,8 +450,8 @@ def pull(cfg, ctx, quiet, apikey):
             pass
     if not apikey:
         raise click.ClickException(
-            u'Specify an api key either in steve.ini, on command line, '
-            u'or in API_KEY file.'
+            u'Specify an api key either in {0}, on command line, '
+            u'or in API_KEY file.'.format(get_project_config_file_name())
         )
 
     if not username or not api_url or not cat_title or not apikey:
