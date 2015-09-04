@@ -86,7 +86,7 @@ class ScrapevideoTestCase(TestCase):
     # FIXME: More extensive tests
 
 
-class StatusTestCase:
+class StatusTestCase(TestCase):
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('status', '--help'))
@@ -95,7 +95,7 @@ class StatusTestCase:
     # FIXME: More extensive tests
 
 
-class VerifyTestCase:
+class VerifyTestCase(TestCase):
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('verify', '--help'))
@@ -104,7 +104,7 @@ class VerifyTestCase:
     # FIXME: More extensive tests
 
 
-class WebeditTestCase:
+class WebeditTestCase(TestCase):
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('webedit', '--help'))
