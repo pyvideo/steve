@@ -199,8 +199,7 @@ def with_config(fun):
 
 
 def get_project_config():
-    """Finds and opens the config file in the current directory
-      or parent directory
+    """Finds and opens config file in the current or parent directory
 
     :raises ConfigNotFound: if the config file can't be found
 
