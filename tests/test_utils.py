@@ -6,7 +6,7 @@
 # license.
 #######################################################################
 
-from unittest import TestCase
+import pytest
 
 from steve.util import (
     get_video_id,
@@ -17,7 +17,7 @@ from steve.util import (
 )
 
 
-class VerifyVideoDataTestCase(TestCase):
+class TestVerifyVideoData:
     default = {
         'title': 'Foo',
         'category': 'Test Category',
@@ -160,8 +160,5 @@ def test_get_video_id():
         'http://pyvideo.org/video/foo'
     ]
     for url in data:
-        try:
+        with pytest.raises(SteveException):
             get_video_id(url)
-            assert False
-        except SteveException:
-            pass

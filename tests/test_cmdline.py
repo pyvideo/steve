@@ -1,5 +1,4 @@
 import os
-from unittest import TestCase
 
 from click.testing import CliRunner
 
@@ -12,7 +11,7 @@ from steve.cmdline import cli
 # http://click.pocoo.org/5/testing/#file-system-isolation
 
 
-class CmdlineHelpTestCase(TestCase):
+class TestCmdlineHelp:
     def test_help(self):
         """Basic test to make sure the cli works"""
         runner = CliRunner()
@@ -21,7 +20,7 @@ class CmdlineHelpTestCase(TestCase):
         assert 'Usage' in result.output.splitlines()[0]
 
 
-class CreateprojectTestCase(TestCase):
+class TestCreateproject:
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('createproject', '--help'))
@@ -50,7 +49,7 @@ class CreateprojectTestCase(TestCase):
             assert '{0} exists.'.format(os.path.join(path, 'testprj')) in result.output
 
 
-class FetchTestCase(TestCase):
+class TestFetch:
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('fetch', '--help'))
@@ -59,7 +58,7 @@ class FetchTestCase(TestCase):
     # FIXME: More extensive tests
 
 
-class PullTestCase(TestCase):
+class TestPull:
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('pull', '--help'))
@@ -68,7 +67,7 @@ class PullTestCase(TestCase):
     # FIXME: More extensive tests
 
 
-class PushTestCase(TestCase):
+class TestPush:
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('push', '--help'))
@@ -77,7 +76,7 @@ class PushTestCase(TestCase):
     # FIXME: More extensive tests
 
 
-class ScrapevideoTestCase(TestCase):
+class TestScrapevideo:
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('scrapevideo', '--help'))
@@ -86,7 +85,7 @@ class ScrapevideoTestCase(TestCase):
     # FIXME: More extensive tests
 
 
-class StatusTestCase(TestCase):
+class TestStatus:
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('status', '--help'))
@@ -95,7 +94,7 @@ class StatusTestCase(TestCase):
     # FIXME: More extensive tests
 
 
-class VerifyTestCase(TestCase):
+class TestVerify:
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('verify', '--help'))
@@ -104,7 +103,7 @@ class VerifyTestCase(TestCase):
     # FIXME: More extensive tests
 
 
-class WebeditTestCase(TestCase):
+class TestWebedit:
     def test_help(self):
         runner = CliRunner()
         result = runner.invoke(cli, ('webedit', '--help'))
