@@ -501,7 +501,7 @@ def load_json_files(config):
             fp = open(full_path, 'r')
             data.append((fn, json.load(fp)))
             fp.close()
-        except Exception, e:
+        except Exception as e:
             err('Problem with {0}'.format(full_path), wrap=False)
             raise e
 
