@@ -413,8 +413,8 @@ def push(cfg, ctx, quiet, apikey, update, overwrite, files):
                 vid = steve.richardapi.update_video(
                     api_url, apikey, contents['id'], contents)
             except steve.restapi.RestAPIException as exc:
-                click.err('   Error?: {0}'.format(exc))
-                click.err('   "{0}"'.format(exc.response.content))
+                click.echo('   Error?: {0}'.format(exc), err=True)
+                click.echo('   "{0}"'.format(exc.response.content), err=True)
 
         save_json_file(cfg, fn, contents)
 
