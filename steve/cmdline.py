@@ -25,6 +25,7 @@ from steve.util import (
     get_from_config,
     get_project_config,
     get_project_config_file_name,
+    get_video_id,
     load_json_files,
     save_json_file,
     save_json_files,
@@ -476,8 +477,7 @@ def pull(cfg, ctx, quiet, apikey):
     data = []
 
     for counter, video_url in enumerate(cat['videos']):
-        # Lame, but good enough for now.
-        video_id = video_url.split('/')[-2]
+        video_id = get_video_id(video_url)
 
         video_data = steve.restapi.get_content(
             api.video(video_id).get(username=username,
