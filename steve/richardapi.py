@@ -6,6 +6,9 @@
 # license.
 #######################################################################
 
+# FIXME: Fix for python3
+import urlparse
+
 from steve import restapi
 from steve.util import SteveException, verify_video_data
 
@@ -64,9 +67,19 @@ def get_all_categories(api_url):
     api = restapi.API(api_url)
 
     # Build a dict of cat title -> cat data
-    resp = restapi.get_content(api.category.get(limit=0))
+    resp = restapi.get_content(api.category.get())
 
-    return resp['results']
+    cats = resp['results']
+
+    # If there are more than 50 categories, then the results are paged. So we
+    # hit each "next' page until we have all the results.
+    while resp['next'] is not None:
+        parts = urlparse.urlparse(resp['next'])
+        qs = urlparse.parse_qs(parts.query)
+        resp = restapi.get_content(api.category.get(page=qs['page']))
+        cats.extend(resp['results'])
+
+    return cats
 
 
 def get_category(api_url, title):
